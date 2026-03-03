@@ -24,6 +24,7 @@ export type Database = {
           report_markdown: string | null
           report_sources: Json | null
           report_title: string | null
+          share_id: string | null
         }
         Insert: {
           created_at?: string
@@ -34,6 +35,7 @@ export type Database = {
           report_markdown?: string | null
           report_sources?: Json | null
           report_title?: string | null
+          share_id?: string | null
         }
         Update: {
           created_at?: string
@@ -44,6 +46,7 @@ export type Database = {
           report_markdown?: string | null
           report_sources?: Json | null
           report_title?: string | null
+          share_id?: string | null
         }
         Relationships: []
       }

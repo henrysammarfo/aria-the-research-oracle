@@ -96,6 +96,31 @@ All colors MUST be HSL.
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
+
+  /* Dashboard theme tokens */
+  .dashboard-dark {
+    --dash-bg: 0 0% 4%;
+    --dash-surface: 0 0% 100%;
+    --dash-surface-opacity: 0.03;
+    --dash-border: 0 0% 100%;
+    --dash-border-opacity: 0.06;
+    --dash-text: 0 0% 100%;
+    --dash-text-muted-opacity: 0.4;
+    --dash-text-dim-opacity: 0.2;
+    --dash-text-ghost-opacity: 0.1;
+  }
+
+  .dashboard-light {
+    --dash-bg: 0 0% 97%;
+    --dash-surface: 0 0% 0%;
+    --dash-surface-opacity: 0.04;
+    --dash-border: 0 0% 0%;
+    --dash-border-opacity: 0.08;
+    --dash-text: 0 0% 8%;
+    --dash-text-muted-opacity: 0.55;
+    --dash-text-dim-opacity: 0.3;
+    --dash-text-ghost-opacity: 0.15;
+  }
 }
 
 @layer base {

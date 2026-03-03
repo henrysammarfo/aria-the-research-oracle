@@ -1,6 +1,6 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Activity, PanelLeftClose, PanelLeft } from "lucide-react";
+import { ArrowLeft, Activity, PanelLeftClose, PanelLeft, Sun, Moon } from "lucide-react";
 import { Link } from "react-router-dom";
 import TaskInput from "@/components/dashboard/TaskInput";
 import AgentStream from "@/components/dashboard/AgentStream";
@@ -20,8 +20,15 @@ const Dashboard = () => {
     events: [],
   });
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [theme, setTheme] = useState<"dark" | "light">(() => {
+    return (localStorage.getItem("aria_theme") as "dark" | "light") || "dark";
+  });
 
-  const { sessions, loading, saveSession, loadSession, deleteSession } = useSessionHistory();
+  useEffect(() => {
+    localStorage.setItem("aria_theme", theme);
+  }, [theme]);
+
+  const { sessions, loading, saveSession, loadSession, deleteSession, shareSession, unshareSession } = useSessionHistory();
 
   const handleSubmit = useCallback(async (query: string) => {
     const newTask: TaskState = {
@@ -83,60 +90,93 @@ const Dashboard = () => {
     setTask({ id: "", query: "", status: "idle", events: [] });
   }, []);
 
+  const handleShare = useCallback(async () => {
+    if (!task.id) return null;
+    return shareSession(task.id);
+  }, [task.id, shareSession]);
+
+  const handleUnshare = useCallback(async () => {
+    if (!task.id) return;
+    await unshareSession(task.id);
+  }, [task.id, unshareSession]);
+
   const isRunning = task.status === "running";
   const isComplete = task.status === "complete";
   const showStream = isRunning || isComplete;
+  const isDark = theme === "dark";
 
   return (
-    <div className="flex flex-col h-screen w-full" style={{ background: "#0A0A0A" }}>
+    <div
+      className={`flex flex-col h-screen w-full ${isDark ? "dashboard-dark" : "dashboard-light"}`}
+      style={{ background: isDark ? "#0A0A0A" : "#F5F5F4" }}
+    >
       {/* Top bar */}
       <div
         className="flex items-center justify-between flex-shrink-0"
         style={{
           padding: "12px 24px",
-          borderBottom: "1px solid rgba(255,255,255,0.06)",
+          borderBottom: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}`,
         }}
       >
         <div className="flex items-center gap-4">
           <Link
             to="/"
-            className="flex items-center gap-2 text-white/30 hover:text-white/60 transition-colors"
-            style={{ fontSize: 13 }}
+            className="flex items-center gap-2 transition-colors"
+            style={{ fontSize: 13, color: isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.3)" }}
           >
             <ArrowLeft size={14} />
           </Link>
           <button
             onClick={() => setSidebarOpen((v) => !v)}
-            className="text-white/20 hover:text-white/50 transition-colors"
+            style={{ color: isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.25)" }}
           >
             {sidebarOpen ? <PanelLeftClose size={16} /> : <PanelLeft size={16} />}
           </button>
-          <span className="text-white font-bold tracking-[0.2em] uppercase" style={{ fontSize: 14 }}>
+          <span
+            className="font-bold tracking-[0.2em] uppercase"
+            style={{ fontSize: 14, color: isDark ? "#fff" : "#1a1a1a" }}
+          >
             ARIA
           </span>
-          <span className="text-white/15 font-mono" style={{ fontSize: 10 }}>
+          <span className="font-mono" style={{ fontSize: 10, color: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.2)" }}>
             / dashboard
           </span>
         </div>
 
-        {isRunning && (
-          <motion.div
-            className="flex items-center gap-2"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
-            <Activity size={13} className="text-emerald-400 animate-pulse" />
-            <span className="text-emerald-400/70 font-mono" style={{ fontSize: 11 }}>
-              Agents working...
-            </span>
-          </motion.div>
-        )}
+        <div className="flex items-center gap-3">
+          {isRunning && (
+            <motion.div
+              className="flex items-center gap-2"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
+              <Activity size={13} className="text-emerald-400 animate-pulse" />
+              <span className="text-emerald-400/70 font-mono" style={{ fontSize: 11 }}>
+                Agents working...
+              </span>
+            </motion.div>
+          )}
 
-        {isComplete && (
-          <span className="text-white/20 font-mono" style={{ fontSize: 11 }}>
-            {task.events.length} events · complete
-          </span>
-        )}
+          {isComplete && (
+            <span className="font-mono" style={{ fontSize: 11, color: isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.25)" }}>
+              {task.events.length} events · complete
+            </span>
+          )}
+
+          <button
+            onClick={() => setTheme(isDark ? "light" : "dark")}
+            className="rounded-lg transition-colors"
+            style={{
+              padding: "6px",
+              color: isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)",
+              background: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)",
+              border: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}`,
+            }}
+            title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+          >
+            {isDark ? <Sun size={14} /> : <Moon size={14} />}
+          </button>
+        </div>
       </div>
 
       {/* Main content */}
@@ -147,7 +187,7 @@ const Dashboard = () => {
             className="flex-shrink-0 overflow-hidden"
             style={{
               width: 240,
-              borderRight: "1px solid rgba(255,255,255,0.06)",
+              borderRight: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}`,
             }}
           >
             <SessionHistory
@@ -157,6 +197,7 @@ const Dashboard = () => {
               onSelect={handleLoadSession}
               onDelete={deleteSession}
               onNew={handleNew}
+              isDark={isDark}
             />
           </div>
         )}
@@ -167,7 +208,7 @@ const Dashboard = () => {
           style={{
             width: showStream ? "40%" : "100%",
             maxWidth: showStream ? 520 : 720,
-            borderRight: showStream ? "1px solid rgba(255,255,255,0.06)" : "none",
+            borderRight: showStream ? `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}` : "none",
             transition: "width 0.3s ease, max-width 0.3s ease",
             margin: showStream ? 0 : "0 auto",
           }}
@@ -178,7 +219,7 @@ const Dashboard = () => {
               padding: showStream ? "20px 20px 16px" : "80px 24px 24px",
             }}
           >
-            <TaskInput onSubmit={handleSubmit} isLoading={isRunning} />
+            <TaskInput onSubmit={handleSubmit} isLoading={isRunning} isDark={isDark} />
           </div>
 
           {showStream && (
@@ -187,18 +228,18 @@ const Dashboard = () => {
                 className="flex items-center gap-2 flex-shrink-0"
                 style={{
                   padding: "10px 20px",
-                  borderTop: "1px solid rgba(255,255,255,0.04)",
-                  borderBottom: "1px solid rgba(255,255,255,0.04)",
+                  borderTop: `1px solid ${isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)"}`,
+                  borderBottom: `1px solid ${isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)"}`,
                 }}
               >
-                <span className="font-mono text-white/20" style={{ fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase" }}>
+                <span className="font-mono" style={{ fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.3)" }}>
                   Agent Stream
                 </span>
-                <span className="text-white/10 font-mono" style={{ fontSize: 10 }}>
+                <span className="font-mono" style={{ fontSize: 10, color: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)" }}>
                   ({task.events.length})
                 </span>
               </div>
-              <AgentStream events={task.events} />
+              <AgentStream events={task.events} isDark={isDark} />
             </div>
           )}
         </div>
@@ -207,7 +248,7 @@ const Dashboard = () => {
         {showStream && (
           <div className="flex-1 overflow-hidden flex flex-col">
             {isComplete && task.report ? (
-              <ReportView report={task.report} />
+              <ReportView report={task.report} isDark={isDark} sessionId={task.id} onShare={handleShare} onUnshare={handleUnshare} />
             ) : (
               <div className="flex-1 flex items-center justify-center">
                 <div className="text-center">
@@ -216,15 +257,15 @@ const Dashboard = () => {
                     style={{
                       width: 48,
                       height: 48,
-                      background: "rgba(255,255,255,0.03)",
-                      border: "1px solid rgba(255,255,255,0.06)",
+                      background: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.04)",
+                      border: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}`,
                     }}
                     animate={{ rotate: 360 }}
                     transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
                   >
-                    <Activity size={20} className="text-white/15" />
+                    <Activity size={20} style={{ color: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.2)" }} />
                   </motion.div>
-                  <p className="text-white/15 font-mono" style={{ fontSize: 12 }}>
+                  <p className="font-mono" style={{ fontSize: 12, color: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.25)" }}>
                     Report will appear here when agents finish
                   </p>
                 </div>
