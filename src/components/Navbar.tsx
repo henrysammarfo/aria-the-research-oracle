@@ -1,6 +1,44 @@
 import { ChevronDown } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
 
-const navLinks = ["Research", "Agents", "Features", "Docs"];
+const navData = [
+  {
+    label: "Research",
+    items: [
+      { title: "Web Search", desc: "Tavily-powered multi-source search" },
+      { title: "Source Extraction", desc: "Parse and clean any webpage" },
+      { title: "Citation Tracking", desc: "Full provenance for every claim" },
+    ],
+  },
+  {
+    label: "Agents",
+    items: [
+      { title: "Orchestrator", desc: "GLM-4-Plus task decomposition" },
+      { title: "Researcher", desc: "Autonomous web research agent" },
+      { title: "Analyst", desc: "GLM-Z1 deep reasoning engine" },
+      { title: "Coder", desc: "Sandboxed Python execution" },
+      { title: "Writer", desc: "Structured report synthesis" },
+    ],
+  },
+  {
+    label: "Features",
+    items: [
+      { title: "Live Streaming", desc: "Watch agents think via SSE" },
+      { title: "PDF Export", desc: "Publication-ready reports" },
+      { title: "Session Memory", desc: "Redis + SQLite persistence" },
+      { title: "Docker Deploy", desc: "One-command production setup" },
+    ],
+  },
+  {
+    label: "Docs",
+    items: [
+      { title: "Quick Start", desc: "Get running in 5 minutes" },
+      { title: "API Reference", desc: "Endpoints and schemas" },
+      { title: "Architecture", desc: "Multi-agent system design" },
+      { title: "GitHub", desc: "Open-source repository" },
+    ],
+  },
+];
 
 const GlowPillButton = ({
   children,
@@ -11,28 +49,17 @@ const GlowPillButton = ({
 }) => {
   const isDark = variant === "dark";
   return (
-    <button
-      className="relative rounded-full"
-      style={{ padding: "0.6px" }}
-    >
-      {/* Outer border */}
+    <button className="relative rounded-full" style={{ padding: "0.6px" }}>
       <span className="absolute inset-0 rounded-full border border-white/60" />
-      {/* Top glow streak */}
       <span
         className="absolute top-0 left-1/2 -translate-x-1/2 h-[1px] w-3/5 rounded-full"
         style={{
-          background:
-            "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.7) 50%, transparent 100%)",
+          background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.7) 50%, transparent 100%)",
           filter: "blur(1px)",
         }}
       />
-      {/* Inner pill */}
       <span
-        className={`relative z-10 block rounded-full text-sm font-medium ${
-          isDark
-            ? "bg-black text-white"
-            : "bg-white text-black"
-        }`}
+        className={`relative z-10 block rounded-full text-sm font-medium ${isDark ? "bg-black text-white" : "bg-white text-black"}`}
         style={{ padding: "11px 29px" }}
       >
         {children}
@@ -43,20 +70,94 @@ const GlowPillButton = ({
 
 export { GlowPillButton };
 
+const NavDropdown = ({ label, items }: { label: string; items: { title: string; desc: string }[] }) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const timeout = useRef<ReturnType<typeof setTimeout>>();
+
+  const handleEnter = () => {
+    clearTimeout(timeout.current);
+    setOpen(true);
+  };
+  const handleLeave = () => {
+    timeout.current = setTimeout(() => setOpen(false), 150);
+  };
+
+  useEffect(() => () => clearTimeout(timeout.current), []);
+
+  return (
+    <div
+      ref={ref}
+      className="relative"
+      onMouseEnter={handleEnter}
+      onMouseLeave={handleLeave}
+    >
+      <button
+        className="flex items-center text-white font-medium hover:opacity-80 transition-opacity"
+        style={{ fontSize: 14, gap: 10 }}
+        onClick={() => setOpen(!open)}
+      >
+        {label}
+        <ChevronDown
+          size={14}
+          className={`text-white/60 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+
+      {/* Dropdown */}
+      <div
+        className={`absolute top-full left-1/2 -translate-x-1/2 pt-3 transition-all duration-200 ${
+          open ? "opacity-100 translate-y-0 pointer-events-auto" : "opacity-0 -translate-y-2 pointer-events-none"
+        }`}
+        style={{ width: 260 }}
+      >
+        <div
+          className="rounded-xl overflow-hidden"
+          style={{
+            background: "rgba(12,12,12,0.95)",
+            border: "1px solid rgba(255,255,255,0.08)",
+            backdropFilter: "blur(20px)",
+          }}
+        >
+          {items.map((item, i) => (
+            <a
+              key={item.title}
+              href="#"
+              className="block transition-colors duration-150 hover:bg-white/[0.04]"
+              style={{
+                padding: "14px 18px",
+                borderBottom: i < items.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none",
+              }}
+            >
+              <span className="block text-white font-medium" style={{ fontSize: 13 }}>
+                {item.title}
+              </span>
+              <span
+                className="block mt-0.5"
+                style={{ fontSize: 11, color: "rgba(255,255,255,0.3)" }}
+              >
+                {item.desc}
+              </span>
+            </a>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const Navbar = () => {
   return (
     <nav
       className="relative z-20 flex items-center justify-between w-full"
       style={{ padding: "20px 120px" }}
     >
-      {/* Responsive padding override */}
       <style>{`
         @media (max-width: 768px) {
           nav { padding: 20px 24px !important; }
         }
       `}</style>
 
-      {/* Logo */}
       <div
         className="text-white font-bold tracking-[0.2em] text-xl uppercase"
         style={{ height: 25, display: "flex", alignItems: "center" }}
@@ -64,22 +165,12 @@ const Navbar = () => {
         ARIA
       </div>
 
-      {/* Nav Links */}
       <div className="hidden md:flex items-center" style={{ gap: 30 }}>
-        {navLinks.map((link) => (
-          <a
-            key={link}
-            href="#"
-            className="flex items-center text-white font-medium hover:opacity-80 transition-opacity"
-            style={{ fontSize: 14, gap: 14 }}
-          >
-            {link}
-            <ChevronDown size={14} className="text-white" />
-          </a>
+        {navData.map((nav) => (
+          <NavDropdown key={nav.label} label={nav.label} items={nav.items} />
         ))}
       </div>
 
-      {/* CTA */}
       <GlowPillButton variant="dark">Get Early Access</GlowPillButton>
     </nav>
   );
