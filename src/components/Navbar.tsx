@@ -1,6 +1,6 @@
 import { ChevronDown } from "lucide-react";
 
-const navLinks = ["Get Started", "Developers", "Features", "Resources"];
+const navLinks = ["Research", "Agents", "Features", "Docs"];
 
 const GlowPillButton = ({
   children,
@@ -58,10 +58,10 @@ const Navbar = () => {
 
       {/* Logo */}
       <div
-        className="text-white font-bold tracking-widest text-xl uppercase"
-        style={{ width: 187, height: 25, display: "flex", alignItems: "center" }}
+        className="text-white font-bold tracking-[0.2em] text-xl uppercase"
+        style={{ height: 25, display: "flex", alignItems: "center" }}
       >
-        LOGOIPSUM
+        ARIA
       </div>
 
       {/* Nav Links */}
@@ -80,7 +80,7 @@ const Navbar = () => {
       </div>
 
       {/* CTA */}
-      <GlowPillButton variant="dark">Join Waitlist</GlowPillButton>
+      <GlowPillButton variant="dark">Get Early Access</GlowPillButton>
     </nav>
   );
 };
