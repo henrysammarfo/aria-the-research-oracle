@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Activity, PanelLeftClose, PanelLeft, Sun, Moon, LogOut } from "lucide-react";
+import { ArrowLeft, Activity, PanelLeftClose, PanelLeft, Sun, Moon, LogOut, Settings } from "lucide-react";
 import { Link } from "react-router-dom";
 import TaskInput from "@/components/dashboard/TaskInput";
 import AgentStream from "@/components/dashboard/AgentStream";
@@ -178,6 +178,20 @@ const Dashboard = () => {
           >
             {isDark ? <Sun size={14} /> : <Moon size={14} />}
           </button>
+
+          <Link
+            to="/settings"
+            className="rounded-lg transition-colors"
+            style={{
+              padding: "6px",
+              color: isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)",
+              background: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)",
+              border: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}`,
+            }}
+            title="Settings"
+          >
+            <Settings size={14} />
+          </Link>
 
           <button
             onClick={signOut}
