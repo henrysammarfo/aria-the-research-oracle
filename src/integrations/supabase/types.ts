@@ -14,7 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      research_sessions: {
+        Row: {
+          created_at: string
+          device_id: string
+          events_count: number | null
+          id: string
+          query: string
+          report_markdown: string | null
+          report_sources: Json | null
+          report_title: string | null
+        }
+        Insert: {
+          created_at?: string
+          device_id: string
+          events_count?: number | null
+          id?: string
+          query: string
+          report_markdown?: string | null
+          report_sources?: Json | null
+          report_title?: string | null
+        }
+        Update: {
+          created_at?: string
+          device_id?: string
+          events_count?: number | null
+          id?: string
+          query?: string
+          report_markdown?: string | null
+          report_sources?: Json | null
+          report_title?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
