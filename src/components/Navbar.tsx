@@ -1,5 +1,6 @@
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Menu, X } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 
 const navData = [
   {
@@ -146,33 +147,152 @@ const NavDropdown = ({ label, items }: { label: string; items: { title: string; 
   );
 };
 
-const Navbar = () => {
+const MobileAccordion = ({ label, items }: { label: string; items: { title: string; desc: string }[] }) => {
+  const [open, setOpen] = useState(false);
   return (
-    <nav
-      className="relative z-20 flex items-center justify-between w-full"
-      style={{ padding: "20px 120px" }}
-    >
-      <style>{`
-        @media (max-width: 768px) {
-          nav { padding: 20px 24px !important; }
-        }
-      `}</style>
-
-      <div
-        className="text-white font-bold tracking-[0.2em] text-xl uppercase"
-        style={{ height: 25, display: "flex", alignItems: "center" }}
+    <div style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+      <button
+        className="w-full flex items-center justify-between text-white font-medium"
+        style={{ padding: "18px 0", fontSize: 18 }}
+        onClick={() => setOpen(!open)}
       >
-        ARIA
-      </div>
+        {label}
+        <ChevronDown
+          size={16}
+          className={`text-white/40 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+            className="overflow-hidden"
+          >
+            <div className="pb-4 flex flex-col gap-1">
+              {items.map((item) => (
+                <a
+                  key={item.title}
+                  href="#"
+                  className="block rounded-lg hover:bg-white/[0.04] transition-colors"
+                  style={{ padding: "10px 16px" }}
+                >
+                  <span className="block text-white/80 font-medium" style={{ fontSize: 14 }}>
+                    {item.title}
+                  </span>
+                  <span className="block mt-0.5" style={{ fontSize: 12, color: "rgba(255,255,255,0.25)" }}>
+                    {item.desc}
+                  </span>
+                </a>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
 
-      <div className="hidden md:flex items-center" style={{ gap: 30 }}>
-        {navData.map((nav) => (
-          <NavDropdown key={nav.label} label={nav.label} items={nav.items} />
-        ))}
-      </div>
+const Navbar = () => {
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-      <GlowPillButton variant="dark">Get Early Access</GlowPillButton>
-    </nav>
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [mobileOpen]);
+
+  return (
+    <>
+      <nav
+        className="relative z-30 flex items-center justify-between w-full"
+        style={{ padding: "20px 120px" }}
+      >
+        <style>{`
+          @media (max-width: 768px) {
+            nav { padding: 20px 24px !important; }
+          }
+        `}</style>
+
+        <div
+          className="text-white font-bold tracking-[0.2em] text-xl uppercase"
+          style={{ height: 25, display: "flex", alignItems: "center" }}
+        >
+          ARIA
+        </div>
+
+        <div className="hidden md:flex items-center" style={{ gap: 30 }}>
+          {navData.map((nav) => (
+            <NavDropdown key={nav.label} label={nav.label} items={nav.items} />
+          ))}
+        </div>
+
+        <div className="flex items-center gap-4">
+          <div className="hidden md:block">
+            <GlowPillButton variant="dark">Get Early Access</GlowPillButton>
+          </div>
+
+          {/* Hamburger */}
+          <button
+            className="md:hidden flex items-center justify-center text-white"
+            style={{ width: 40, height: 40 }}
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label="Toggle menu"
+          >
+            {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
+        </div>
+      </nav>
+
+      {/* Mobile Overlay */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            className="fixed inset-0 z-20 flex flex-col md:hidden"
+            style={{
+              background: "rgba(0,0,0,0.97)",
+              backdropFilter: "blur(20px)",
+            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+          >
+            {/* Spacer for navbar */}
+            <div style={{ height: 65 }} />
+
+            {/* Nav items */}
+            <motion.div
+              className="flex-1 overflow-y-auto px-6 pt-4"
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.3, delay: 0.1 }}
+            >
+              {navData.map((nav) => (
+                <MobileAccordion key={nav.label} label={nav.label} items={nav.items} />
+              ))}
+
+              <div className="mt-8">
+                <GlowPillButton variant="light">Get Early Access</GlowPillButton>
+              </div>
+
+              <p
+                className="font-mono mt-10"
+                style={{ fontSize: 11, color: "rgba(255,255,255,0.15)", letterSpacing: "0.05em" }}
+              >
+                ARIA — Autonomous Research Intelligence Agent
+              </p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 };
 
