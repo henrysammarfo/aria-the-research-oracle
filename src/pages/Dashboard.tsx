@@ -9,6 +9,7 @@ import SessionHistory from "@/components/dashboard/SessionHistory";
 import { runAIPipeline } from "@/lib/aiPipeline";
 import { runSimulatedPipeline } from "@/lib/simulatedPipeline";
 import { useSessionHistory } from "@/hooks/useSessionHistory";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import type { AgentEvent, TaskState } from "@/types/aria";
@@ -25,9 +26,32 @@ const Dashboard = () => {
     return (localStorage.getItem("aria_theme") as "dark" | "light") || "dark";
   });
 
+  const { user } = useAuth();
+
+  // Load theme preference from profile
   useEffect(() => {
-    localStorage.setItem("aria_theme", theme);
-  }, [theme]);
+    if (!user) return;
+    supabase
+      .from("profiles")
+      .select("theme_preference")
+      .eq("id", user.id)
+      .single()
+      .then(({ data }) => {
+        const t = (data as any)?.theme_preference as string | null;
+        if (t === "light" || t === "dark") {
+          setTheme(t);
+          localStorage.setItem("aria_theme", t);
+        }
+      });
+  }, [user]);
+
+  const handleThemeChange = useCallback(async (newTheme: "dark" | "light") => {
+    setTheme(newTheme);
+    localStorage.setItem("aria_theme", newTheme);
+    if (user) {
+      await supabase.from("profiles").update({ theme_preference: newTheme } as any).eq("id", user.id);
+    }
+  }, [user]);
 
   const { sessions, loading, saveSession, loadSession, deleteSession, shareSession, unshareSession } = useSessionHistory();
   const { signOut } = useAuth();
@@ -166,7 +190,7 @@ const Dashboard = () => {
           )}
 
           <button
-            onClick={() => setTheme(isDark ? "light" : "dark")}
+            onClick={() => handleThemeChange(isDark ? "light" : "dark")}
             className="rounded-lg transition-colors"
             style={{
               padding: "6px",
