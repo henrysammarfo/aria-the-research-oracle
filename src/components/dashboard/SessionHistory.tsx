@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Clock, Trash2, FileText, Plus } from "lucide-react";
+import { Clock, Trash2, FileText, Plus, Search } from "lucide-react";
 import type { SessionSummary } from "@/hooks/useSessionHistory";
 
 interface SessionHistoryProps {
@@ -12,6 +13,18 @@ interface SessionHistoryProps {
 }
 
 const SessionHistory = ({ sessions, loading, activeId, onSelect, onDelete, onNew }: SessionHistoryProps) => {
+  const [search, setSearch] = useState("");
+
+  const filtered = search.trim()
+    ? sessions.filter((s) => {
+        const q = search.toLowerCase();
+        return (
+          s.query.toLowerCase().includes(q) ||
+          (s.report_title && s.report_title.toLowerCase().includes(q))
+        );
+      })
+    : sessions;
+
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
@@ -41,22 +54,47 @@ const SessionHistory = ({ sessions, loading, activeId, onSelect, onDelete, onNew
         </button>
       </div>
 
+      {/* Search */}
+      <div
+        className="flex-shrink-0"
+        style={{ padding: "8px 12px", borderBottom: "1px solid rgba(255,255,255,0.04)" }}
+      >
+        <div
+          className="flex items-center gap-2 rounded-lg"
+          style={{
+            padding: "6px 10px",
+            background: "rgba(255,255,255,0.03)",
+            border: "1px solid rgba(255,255,255,0.06)",
+          }}
+        >
+          <Search size={12} className="text-white/20 flex-shrink-0" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search sessions..."
+            className="bg-transparent text-white/60 placeholder:text-white/15 outline-none w-full"
+            style={{ fontSize: 11 }}
+          />
+        </div>
+      </div>
+
       {/* Sessions list */}
       <div className="flex-1 overflow-y-auto" style={{ padding: "4px 0" }}>
         {loading ? (
           <div className="flex items-center justify-center py-8">
             <div className="w-4 h-4 border-2 border-white/10 border-t-white/30 rounded-full animate-spin" />
           </div>
-        ) : sessions.length === 0 ? (
+        ) : filtered.length === 0 ? (
           <div className="text-center py-8" style={{ padding: "0 16px" }}>
             <FileText size={20} className="mx-auto mb-2 text-white/10" />
             <p className="text-white/15 font-mono" style={{ fontSize: 11 }}>
-              No research sessions yet
+              {search.trim() ? "No matching sessions" : "No research sessions yet"}
             </p>
           </div>
         ) : (
           <AnimatePresence initial={false}>
-            {sessions.map((session) => (
+            {filtered.map((session) => (
               <motion.div
                 key={session.id}
                 initial={{ opacity: 0, x: -8 }}
@@ -87,7 +125,7 @@ const SessionHistory = ({ sessions, loading, activeId, onSelect, onDelete, onNew
                         <span className="text-white/15 font-mono" style={{ fontSize: 9 }}>
                           {new Date(session.created_at).toLocaleDateString()}
                         </span>
-                        {session.events_count && (
+                        {session.events_count != null && session.events_count > 0 && (
                           <span className="text-white/10 font-mono" style={{ fontSize: 9 }}>
                             {session.events_count} events
                           </span>
