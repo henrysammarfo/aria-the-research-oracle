@@ -20,18 +20,21 @@ export type Database = {
           created_at: string
           display_name: string | null
           id: string
+          theme_preference: string | null
         }
         Insert: {
           avatar_url?: string | null
           created_at?: string
           display_name?: string | null
           id: string
+          theme_preference?: string | null
         }
         Update: {
           avatar_url?: string | null
           created_at?: string
           display_name?: string | null
           id?: string
+          theme_preference?: string | null
         }
         Relationships: []
       }

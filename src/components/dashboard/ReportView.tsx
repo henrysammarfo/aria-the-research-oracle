@@ -18,16 +18,16 @@ const ReportView = ({ report, isDark = true, sessionId, onShare, onUnshare }: Re
   const [sharing, setSharing] = useState(false);
 
   const c = {
-    text: isDark ? "rgba(255,255,255,0.9)" : "rgba(0,0,0,0.9)",
-    textBody: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)",
-    dim: isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.3)",
-    ghost: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.12)",
-    btnText: isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.5)",
-    btnBg: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)",
-    btnBorder: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)",
-    border: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)",
-    sourceDim: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.2)",
-    sourceText: isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.55)",
+    text: isDark ? "rgba(255,255,255,0.95)" : "rgba(0,0,0,0.9)",
+    textBody: isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)",
+    dim: isDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.35)",
+    ghost: isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.12)",
+    btnText: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.55)",
+    btnBg: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
+    btnBorder: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)",
+    border: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)",
+    sourceDim: isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.3)",
+    sourceText: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)",
   };
 
   const handleCopy = async () => {
@@ -152,11 +152,18 @@ const ReportView = ({ report, isDark = true, sessionId, onShare, onUnshare }: Re
           style={{
             '--tw-prose-headings': c.text,
             '--tw-prose-body': c.textBody,
-            '--tw-prose-bold': isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.75)",
+            '--tw-prose-bold': isDark ? "rgba(255,255,255,0.85)" : "rgba(0,0,0,0.8)",
             '--tw-prose-links': '#3B82F6',
-            '--tw-prose-code': isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.65)",
+            '--tw-prose-code': isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)",
+            '--tw-prose-pre-bg': isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)",
+            '--tw-prose-pre-code': isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)",
             '--tw-prose-th-borders': c.ghost,
             '--tw-prose-td-borders': c.border,
+            '--tw-prose-bullets': isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.35)",
+            '--tw-prose-counters': isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.35)",
+            '--tw-prose-quotes': isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)",
+            '--tw-prose-quote-borders': isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)",
+            color: c.textBody,
           } as React.CSSProperties}
         >
           <ReactMarkdown>{report.markdown}</ReactMarkdown>
