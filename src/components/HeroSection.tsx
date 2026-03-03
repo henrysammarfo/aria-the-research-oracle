@@ -42,11 +42,11 @@ const HeroSection = () => {
               }}
             >
               <span
-                className="inline-block rounded-full bg-white"
+                className="inline-block rounded-full bg-white animate-pulse"
                 style={{ width: 4, height: 4 }}
               />
-              <span className="text-white/60">Early access available from</span>
-              <span className="text-white font-medium">May 1, 2026</span>
+              <span className="text-white/60">Autonomous Research Agent</span>
+              <span className="text-white font-medium">Powered by GLM</span>
             </div>
 
             {/* Heading */}
@@ -63,7 +63,7 @@ const HeroSection = () => {
                 backgroundClip: "text",
               }}
             >
-              Web3 at the Speed of Experience
+              Don't Google It. ARIA It.
             </h1>
 
             {/* Subtitle */}
@@ -75,13 +75,14 @@ const HeroSection = () => {
                 marginTop: -16,
               }}
             >
-              Powering seamless experiences and real-time connections, EOS is the
-              base for creators who move with purpose, leveraging resilience,
-              speed, and scale to shape the future.
+              ARIA autonomously decomposes complex research tasks, deploys
+              specialized AI agents — Researcher, Analyst, Coder, Synthesizer —
+              and streams reasoning live, producing structured, cited, exportable
+              reports in minutes, not hours.
             </p>
 
             {/* CTA */}
-            <GlowPillButton variant="light">Join Waitlist</GlowPillButton>
+            <GlowPillButton variant="light">Try ARIA Now</GlowPillButton>
           </div>
         </div>
       </div>
