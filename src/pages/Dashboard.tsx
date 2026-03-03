@@ -1,12 +1,14 @@
 import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Activity } from "lucide-react";
+import { ArrowLeft, Activity, PanelLeftClose, PanelLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import TaskInput from "@/components/dashboard/TaskInput";
 import AgentStream from "@/components/dashboard/AgentStream";
 import ReportView from "@/components/dashboard/ReportView";
+import SessionHistory from "@/components/dashboard/SessionHistory";
 import { runAIPipeline } from "@/lib/aiPipeline";
 import { runSimulatedPipeline } from "@/lib/simulatedPipeline";
+import { useSessionHistory } from "@/hooks/useSessionHistory";
 import { toast } from "sonner";
 import type { AgentEvent, TaskState } from "@/types/aria";
 
@@ -17,14 +19,18 @@ const Dashboard = () => {
     status: "idle",
     events: [],
   });
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  const { sessions, loading, saveSession, loadSession, deleteSession } = useSessionHistory();
 
   const handleSubmit = useCallback(async (query: string) => {
-    setTask({
+    const newTask: TaskState = {
       id: crypto.randomUUID(),
       query,
       status: "running",
       events: [],
-    });
+    };
+    setTask(newTask);
 
     const onEvent = (event: AgentEvent) => {
       setTask((prev) => ({
@@ -33,18 +39,48 @@ const Dashboard = () => {
       }));
     };
 
+    let finalTask: TaskState | null = null;
+
     try {
-      // Try real AI pipeline first
       const report = await runAIPipeline(query, onEvent);
-      setTask((prev) => ({ ...prev, status: "complete", report }));
+      setTask((prev) => {
+        finalTask = { ...prev, status: "complete", report };
+        return finalTask;
+      });
     } catch (err) {
       console.error("AI pipeline failed, falling back to simulation:", err);
       toast.error("AI backend unavailable — running demo mode");
-      // Reset and run simulated
       setTask({ id: crypto.randomUUID(), query, status: "running", events: [] });
       const report = await runSimulatedPipeline(query, onEvent);
-      setTask((prev) => ({ ...prev, status: "complete", report }));
+      setTask((prev) => {
+        finalTask = { ...prev, status: "complete", report };
+        return finalTask;
+      });
     }
+
+    if (finalTask) {
+      saveSession(finalTask).catch(() => {});
+    }
+  }, [saveSession]);
+
+  const handleLoadSession = useCallback(async (sessionId: string) => {
+    const session = await loadSession(sessionId);
+    if (!session || !session.report_markdown) return;
+    setTask({
+      id: session.id,
+      query: session.query,
+      status: "complete",
+      events: [],
+      report: {
+        title: session.report_title || session.query,
+        markdown: session.report_markdown,
+        sources: session.report_sources || [],
+      },
+    });
+  }, [loadSession]);
+
+  const handleNew = useCallback(() => {
+    setTask({ id: "", query: "", status: "idle", events: [] });
   }, []);
 
   const isRunning = task.status === "running";
@@ -69,6 +105,12 @@ const Dashboard = () => {
           >
             <ArrowLeft size={14} />
           </Link>
+          <button
+            onClick={() => setSidebarOpen((v) => !v)}
+            className="text-white/20 hover:text-white/50 transition-colors"
+          >
+            {sidebarOpen ? <PanelLeftClose size={16} /> : <PanelLeft size={16} />}
+          </button>
           <span className="text-white font-bold tracking-[0.2em] uppercase" style={{ fontSize: 14 }}>
             ARIA
           </span>
@@ -99,6 +141,26 @@ const Dashboard = () => {
 
       {/* Main content */}
       <div className="flex flex-1 overflow-hidden">
+        {/* History sidebar */}
+        {sidebarOpen && (
+          <div
+            className="flex-shrink-0 overflow-hidden"
+            style={{
+              width: 240,
+              borderRight: "1px solid rgba(255,255,255,0.06)",
+            }}
+          >
+            <SessionHistory
+              sessions={sessions}
+              loading={loading}
+              activeId={task.id}
+              onSelect={handleLoadSession}
+              onDelete={deleteSession}
+              onNew={handleNew}
+            />
+          </div>
+        )}
+
         {/* Left panel */}
         <div
           className="flex flex-col flex-shrink-0 overflow-hidden"
@@ -110,7 +172,6 @@ const Dashboard = () => {
             margin: showStream ? 0 : "0 auto",
           }}
         >
-          {/* Task Input */}
           <div
             className="flex-shrink-0"
             style={{
@@ -120,7 +181,6 @@ const Dashboard = () => {
             <TaskInput onSubmit={handleSubmit} isLoading={isRunning} />
           </div>
 
-          {/* Agent Stream (in left panel when visible) */}
           {showStream && (
             <div className="flex-1 overflow-hidden flex flex-col">
               <div
