@@ -1,7 +1,13 @@
 import HeroSection from "@/components/HeroSection";
+import AgentFeaturesSection from "@/components/AgentFeaturesSection";
 
 const Index = () => {
-  return <HeroSection />;
+  return (
+    <div>
+      <HeroSection />
+      <AgentFeaturesSection />
+    </div>
+  );
 };
 
 export default Index;
