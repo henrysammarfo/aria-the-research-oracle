@@ -1,6 +1,7 @@
 import Navbar from "./Navbar";
 import { GlowPillButton } from "./Navbar";
 import { motion } from "framer-motion";
+import { useAuth } from "@/hooks/useAuth";
 
 const VIDEO_URL =
   "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260217_030345_246c0224-10a4-422c-b324-070b7c0eceda.mp4";
@@ -15,6 +16,8 @@ const fadeSlideUp = {
 };
 
 const HeroSection = () => {
+  const { user, loading } = useAuth();
+
   return (
     <section className="relative w-full min-h-screen overflow-hidden" style={{ background: "#000" }}>
       {/* Video Background */}
@@ -110,7 +113,11 @@ const HeroSection = () => {
 
             {/* CTA */}
             <motion.div custom={3} variants={fadeSlideUp}>
-              <GlowPillButton variant="light" href="/dashboard">Try ARIA Now</GlowPillButton>
+              {!loading && user ? (
+                <GlowPillButton variant="light" href="/dashboard">Go to Dashboard</GlowPillButton>
+              ) : (
+                <GlowPillButton variant="light" href="/auth">Try ARIA Now</GlowPillButton>
+              )}
             </motion.div>
           </motion.div>
         </div>
