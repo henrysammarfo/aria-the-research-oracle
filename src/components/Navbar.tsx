@@ -44,13 +44,15 @@ const navData = [
 const GlowPillButton = ({
   children,
   variant = "dark",
+  href,
 }: {
   children: React.ReactNode;
   variant?: "dark" | "light";
+  href?: string;
 }) => {
   const isDark = variant === "dark";
-  return (
-    <button className="relative rounded-full" style={{ padding: "0.6px" }}>
+  const inner = (
+    <span className="relative rounded-full inline-block" style={{ padding: "0.6px" }}>
       <span className="absolute inset-0 rounded-full border border-white/60" />
       <span
         className="absolute top-0 left-1/2 -translate-x-1/2 h-[1px] w-3/5 rounded-full"
@@ -65,8 +67,13 @@ const GlowPillButton = ({
       >
         {children}
       </span>
-    </button>
+    </span>
   );
+
+  if (href) {
+    return <a href={href} className="inline-block">{inner}</a>;
+  }
+  return <button className="inline-block">{inner}</button>;
 };
 
 export { GlowPillButton };
@@ -235,7 +242,7 @@ const Navbar = () => {
 
         <div className="flex items-center gap-4">
           <div className="hidden md:block">
-            <GlowPillButton variant="dark">Get Early Access</GlowPillButton>
+            <GlowPillButton variant="dark" href="/dashboard">Get Early Access</GlowPillButton>
           </div>
 
           {/* Hamburger */}
