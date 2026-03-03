@@ -5,7 +5,9 @@ import { Link } from "react-router-dom";
 import TaskInput from "@/components/dashboard/TaskInput";
 import AgentStream from "@/components/dashboard/AgentStream";
 import ReportView from "@/components/dashboard/ReportView";
+import { runAIPipeline } from "@/lib/aiPipeline";
 import { runSimulatedPipeline } from "@/lib/simulatedPipeline";
+import { toast } from "sonner";
 import type { AgentEvent, TaskState } from "@/types/aria";
 
 const Dashboard = () => {
@@ -24,18 +26,25 @@ const Dashboard = () => {
       events: [],
     });
 
-    const report = await runSimulatedPipeline(query, (event: AgentEvent) => {
+    const onEvent = (event: AgentEvent) => {
       setTask((prev) => ({
         ...prev,
         events: [...prev.events, event],
       }));
-    });
+    };
 
-    setTask((prev) => ({
-      ...prev,
-      status: "complete",
-      report,
-    }));
+    try {
+      // Try real AI pipeline first
+      const report = await runAIPipeline(query, onEvent);
+      setTask((prev) => ({ ...prev, status: "complete", report }));
+    } catch (err) {
+      console.error("AI pipeline failed, falling back to simulation:", err);
+      toast.error("AI backend unavailable — running demo mode");
+      // Reset and run simulated
+      setTask({ id: crypto.randomUUID(), query, status: "running", events: [] });
+      const report = await runSimulatedPipeline(query, onEvent);
+      setTask((prev) => ({ ...prev, status: "complete", report }));
+    }
   }, []);
 
   const isRunning = task.status === "running";
