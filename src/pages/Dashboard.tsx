@@ -12,6 +12,7 @@ import { useSessionHistory } from "@/hooks/useSessionHistory";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import type { AgentEvent, TaskState } from "@/types/aria";
 
 const Dashboard = () => {
@@ -25,23 +26,27 @@ const Dashboard = () => {
   const [theme, setTheme] = useState<"dark" | "light">(() => {
     return (localStorage.getItem("aria_theme") as "dark" | "light") || "dark";
   });
+  const [profile, setProfile] = useState<{ display_name: string | null; avatar_url: string | null }>({ display_name: null, avatar_url: null });
 
   const { user } = useAuth();
 
-  // Load theme preference from profile
+  // Load profile + theme preference
   useEffect(() => {
     if (!user) return;
     supabase
       .from("profiles")
-      .select("theme_preference")
+      .select("theme_preference, display_name, avatar_url")
       .eq("id", user.id)
       .single()
       .then(({ data }) => {
-        const t = (data as any)?.theme_preference as string | null;
+        if (!data) return;
+        const d = data as any;
+        const t = d.theme_preference as string | null;
         if (t === "light" || t === "dark") {
           setTheme(t);
           localStorage.setItem("aria_theme", t);
         }
+        setProfile({ display_name: d.display_name, avatar_url: d.avatar_url });
       });
   }, [user]);
 
@@ -215,6 +220,30 @@ const Dashboard = () => {
             title="Settings"
           >
             <Settings size={14} />
+          </Link>
+
+          {/* User avatar & name */}
+          <Link to="/settings" className="flex items-center gap-2 ml-1" title="Profile settings">
+            <Avatar className="h-7 w-7">
+              {profile.avatar_url ? (
+                <AvatarImage src={profile.avatar_url} alt={profile.display_name || "User"} />
+              ) : null}
+              <AvatarFallback
+                className="text-[10px] font-bold"
+                style={{
+                  background: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)",
+                  color: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)",
+                }}
+              >
+                {(profile.display_name || user?.email || "U").slice(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <span
+              className="font-medium hidden sm:inline max-w-[100px] truncate"
+              style={{ fontSize: 12, color: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)" }}
+            >
+              {profile.display_name || user?.email?.split("@")[0] || "User"}
+            </span>
           </Link>
 
           <button
