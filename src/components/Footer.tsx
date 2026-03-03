@@ -61,7 +61,7 @@ const Footer = () => {
           Powered by Z.AI's GLM model ecosystem.
         </p>
         <div className="mt-8">
-          <GlowPillButton variant="light">Try ARIA Now</GlowPillButton>
+          <GlowPillButton variant="light" href="/dashboard">Try ARIA Now</GlowPillButton>
         </div>
       </motion.div>
 

@@ -110,7 +110,7 @@ const HeroSection = () => {
 
             {/* CTA */}
             <motion.div custom={3} variants={fadeSlideUp}>
-              <GlowPillButton variant="light">Try ARIA Now</GlowPillButton>
+              <GlowPillButton variant="light" href="/dashboard">Try ARIA Now</GlowPillButton>
             </motion.div>
           </motion.div>
         </div>
