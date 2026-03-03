@@ -1,1 +1,4 @@
 project_id = "cgzryavrxphlrfivykdb"
+
+[functions.aria-research]
+verify_jwt = false
