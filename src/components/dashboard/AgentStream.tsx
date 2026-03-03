@@ -12,7 +12,7 @@ const agentMeta: Record<AgentName, { icon: typeof Brain; accent: string }> = {
 };
 
 const typeStyles: Record<EventType, { label: string; color: string; icon: typeof Brain }> = {
-  thinking: { label: "thinking", color: "rgba(255,255,255,0.3)", icon: Brain },
+  thinking: { label: "thinking", color: "rgba(128,128,128,0.6)", icon: Brain },
   action: { label: "action", color: "#3B82F6", icon: Zap },
   result: { label: "result", color: "#10B981", icon: CheckCircle2 },
   error: { label: "error", color: "#EF4444", icon: AlertCircle },
@@ -21,7 +21,7 @@ const typeStyles: Record<EventType, { label: string; color: string; icon: typeof
   complete: { label: "done", color: "#10B981", icon: CheckCircle2 },
 };
 
-const AgentStream = ({ events }: { events: AgentEvent[] }) => {
+const AgentStream = ({ events, isDark = true }: { events: AgentEvent[]; isDark?: boolean }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -30,12 +30,19 @@ const AgentStream = ({ events }: { events: AgentEvent[] }) => {
     }
   }, [events.length]);
 
+  const c = {
+    text: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)",
+    textThinking: isDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.35)",
+    borderEvent: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.05)",
+    codeBg: isDark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.03)",
+    codeBorder: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.06)",
+    codeText: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)",
+    timestamp: isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.18)",
+    empty: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)",
+  };
+
   return (
-    <div
-      ref={scrollRef}
-      className="flex-1 overflow-y-auto"
-      style={{ scrollBehavior: "smooth" }}
-    >
+    <div ref={scrollRef} className="flex-1 overflow-y-auto" style={{ scrollBehavior: "smooth" }}>
       <AnimatePresence initial={false}>
         {events.map((event) => {
           const agent = agentMeta[event.agent];
@@ -47,7 +54,6 @@ const AgentStream = ({ events }: { events: AgentEvent[] }) => {
           const isComplete = event.type === "complete";
 
           let displayContent = event.content;
-          // Strip <think> tags for display
           if (isThinking && displayContent.startsWith("<think>")) {
             displayContent = displayContent.replace(/<\/?think>/g, "").trim();
           }
@@ -62,61 +68,24 @@ const AgentStream = ({ events }: { events: AgentEvent[] }) => {
               style={{
                 borderLeftColor: isComplete ? undefined : `${agent.accent}30`,
                 padding: "12px 16px 12px 20px",
-                borderBottom: "1px solid rgba(255,255,255,0.03)",
+                borderBottom: `1px solid ${c.borderEvent}`,
               }}
             >
-              {/* Header */}
               <div className="flex items-center gap-2 mb-1.5">
                 <AgentIcon size={13} style={{ color: agent.accent }} />
-                <span className="font-medium" style={{ fontSize: 12, color: agent.accent }}>
-                  {event.agent}
-                </span>
-                <span
-                  className="rounded font-mono"
-                  style={{
-                    fontSize: 9,
-                    padding: "1px 6px",
-                    color: style.color,
-                    background: `${style.color}15`,
-                    letterSpacing: "0.05em",
-                    textTransform: "uppercase",
-                  }}
-                >
+                <span className="font-medium" style={{ fontSize: 12, color: agent.accent }}>{event.agent}</span>
+                <span className="rounded font-mono" style={{ fontSize: 9, padding: "1px 6px", color: style.color, background: `${style.color}15`, letterSpacing: "0.05em", textTransform: "uppercase" }}>
                   {style.label}
                 </span>
-                <span className="ml-auto font-mono" style={{ fontSize: 9, color: "rgba(255,255,255,0.12)" }}>
-                  {new Date(event.timestamp).toLocaleTimeString()}
-                </span>
+                <span className="ml-auto font-mono" style={{ fontSize: 9, color: c.timestamp }}>{new Date(event.timestamp).toLocaleTimeString()}</span>
               </div>
 
-              {/* Content */}
               {isCode ? (
-                <pre
-                  className="rounded-lg overflow-x-auto font-mono"
-                  style={{
-                    fontSize: 11,
-                    lineHeight: 1.5,
-                    padding: "12px 14px",
-                    color: "rgba(255,255,255,0.5)",
-                    background: "rgba(255,255,255,0.02)",
-                    border: "1px solid rgba(255,255,255,0.04)",
-                    whiteSpace: "pre-wrap",
-                  }}
-                >
+                <pre className="rounded-lg overflow-x-auto font-mono" style={{ fontSize: 11, lineHeight: 1.5, padding: "12px 14px", color: c.codeText, background: c.codeBg, border: `1px solid ${c.codeBorder}`, whiteSpace: "pre-wrap" }}>
                   {displayContent}
                 </pre>
               ) : isPlan ? (
-                <div
-                  className="rounded-lg font-mono"
-                  style={{
-                    fontSize: 11,
-                    padding: "10px 14px",
-                    color: "rgba(34,211,238,0.5)",
-                    background: "rgba(34,211,238,0.03)",
-                    border: "1px solid rgba(34,211,238,0.08)",
-                    lineHeight: 1.6,
-                  }}
-                >
+                <div className="rounded-lg font-mono" style={{ fontSize: 11, padding: "10px 14px", color: "rgba(34,211,238,0.5)", background: "rgba(34,211,238,0.03)", border: "1px solid rgba(34,211,238,0.08)", lineHeight: 1.6 }}>
                   {(() => {
                     try {
                       const plan = JSON.parse(displayContent);
@@ -124,7 +93,7 @@ const AgentStream = ({ events }: { events: AgentEvent[] }) => {
                         <div key={t.id} className="flex gap-2">
                           <span style={{ color: "rgba(34,211,238,0.3)" }}>{t.id}.</span>
                           <span>[{t.type}]</span>
-                          <span style={{ color: "rgba(255,255,255,0.4)" }}>{t.description}</span>
+                          <span style={{ color: c.text }}>{t.description}</span>
                         </div>
                       ));
                     } catch {
@@ -133,18 +102,7 @@ const AgentStream = ({ events }: { events: AgentEvent[] }) => {
                   })()}
                 </div>
               ) : (
-                <p
-                  className={isThinking ? "italic" : ""}
-                  style={{
-                    fontSize: 13,
-                    lineHeight: 1.55,
-                    color: isThinking
-                      ? "rgba(255,255,255,0.25)"
-                      : isComplete
-                      ? "rgba(16,185,129,0.7)"
-                      : "rgba(255,255,255,0.5)",
-                  }}
-                >
+                <p className={isThinking ? "italic" : ""} style={{ fontSize: 13, lineHeight: 1.55, color: isThinking ? c.textThinking : isComplete ? "rgba(16,185,129,0.7)" : c.text }}>
                   {displayContent}
                 </p>
               )}
@@ -155,9 +113,7 @@ const AgentStream = ({ events }: { events: AgentEvent[] }) => {
 
       {events.length === 0 && (
         <div className="flex items-center justify-center h-full">
-          <p className="text-white/10 font-mono" style={{ fontSize: 12 }}>
-            Waiting for task...
-          </p>
+          <p className="font-mono" style={{ fontSize: 12, color: c.empty }}>Waiting for task...</p>
         </div>
       )}
     </div>

@@ -14,6 +14,7 @@ export interface SessionSummary {
 export interface FullSession extends SessionSummary {
   report_markdown: string | null;
   report_sources: { title: string; url: string }[] | null;
+  share_id: string | null;
 }
 
 export function useSessionHistory() {
@@ -62,10 +63,7 @@ export function useSessionHistory() {
         .eq("device_id", deviceId)
         .single();
       if (!data) return null;
-      return {
-        ...data,
-        report_sources: data.report_sources as any,
-      };
+      return { ...data, report_sources: data.report_sources as any };
     },
     [deviceId]
   );
@@ -82,5 +80,30 @@ export function useSessionHistory() {
     [deviceId, fetchSessions]
   );
 
-  return { sessions, loading, saveSession, loadSession, deleteSession, refetch: fetchSessions };
+  const shareSession = useCallback(
+    async (sessionId: string): Promise<string | null> => {
+      const shareId = crypto.randomUUID().slice(0, 8);
+      const { error } = await supabase
+        .from("research_sessions")
+        .update({ share_id: shareId })
+        .eq("id", sessionId)
+        .eq("device_id", deviceId);
+      if (error) return null;
+      return shareId;
+    },
+    [deviceId]
+  );
+
+  const unshareSession = useCallback(
+    async (sessionId: string) => {
+      await supabase
+        .from("research_sessions")
+        .update({ share_id: null })
+        .eq("id", sessionId)
+        .eq("device_id", deviceId);
+    },
+    [deviceId]
+  );
+
+  return { sessions, loading, saveSession, loadSession, deleteSession, shareSession, unshareSession, refetch: fetchSessions };
 }
