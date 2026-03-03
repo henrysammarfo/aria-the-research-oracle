@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
       research_sessions: {
         Row: {
           created_at: string
@@ -25,6 +46,7 @@ export type Database = {
           report_sources: Json | null
           report_title: string | null
           share_id: string | null
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -36,6 +58,7 @@ export type Database = {
           report_sources?: Json | null
           report_title?: string | null
           share_id?: string | null
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -47,6 +70,7 @@ export type Database = {
           report_sources?: Json | null
           report_title?: string | null
           share_id?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }

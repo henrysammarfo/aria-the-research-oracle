@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Activity, PanelLeftClose, PanelLeft, Sun, Moon } from "lucide-react";
+import { ArrowLeft, Activity, PanelLeftClose, PanelLeft, Sun, Moon, LogOut } from "lucide-react";
 import { Link } from "react-router-dom";
 import TaskInput from "@/components/dashboard/TaskInput";
 import AgentStream from "@/components/dashboard/AgentStream";
@@ -10,6 +10,7 @@ import { runAIPipeline } from "@/lib/aiPipeline";
 import { runSimulatedPipeline } from "@/lib/simulatedPipeline";
 import { useSessionHistory } from "@/hooks/useSessionHistory";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
 import type { AgentEvent, TaskState } from "@/types/aria";
 
 const Dashboard = () => {
@@ -29,6 +30,7 @@ const Dashboard = () => {
   }, [theme]);
 
   const { sessions, loading, saveSession, loadSession, deleteSession, shareSession, unshareSession } = useSessionHistory();
+  const { signOut } = useAuth();
 
   const handleSubmit = useCallback(async (query: string) => {
     const newTask: TaskState = {
@@ -175,6 +177,20 @@ const Dashboard = () => {
             title={isDark ? "Switch to light mode" : "Switch to dark mode"}
           >
             {isDark ? <Sun size={14} /> : <Moon size={14} />}
+          </button>
+
+          <button
+            onClick={signOut}
+            className="rounded-lg transition-colors"
+            style={{
+              padding: "6px",
+              color: isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)",
+              background: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)",
+              border: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}`,
+            }}
+            title="Sign out"
+          >
+            <LogOut size={14} />
           </button>
         </div>
       </div>

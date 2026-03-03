@@ -242,7 +242,7 @@ const Navbar = () => {
 
         <div className="flex items-center gap-4">
           <div className="hidden md:block">
-            <GlowPillButton variant="dark" href="/dashboard">Get Early Access</GlowPillButton>
+            <GlowPillButton variant="dark" href="/auth">Get Early Access</GlowPillButton>
           </div>
 
           {/* Hamburger */}
