@@ -2,9 +2,9 @@ import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Link, Navigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { ArrowLeft, Camera, User, Save, Sun, Moon } from "lucide-react";
+import { ArrowLeft, Camera, User, Save, Sun, Moon, Trash2 } from "lucide-react";
 
 const Settings = () => {
   const { user, loading } = useAuth();
@@ -13,7 +13,11 @@ const Settings = () => {
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!user) return;
@@ -195,6 +199,97 @@ const Settings = () => {
               <><Save size={15} /> Save Changes</>
             )}
           </button>
+
+          {/* Danger zone */}
+          <div className="w-full pt-8 mt-4" style={{ borderTop: `1px solid ${isDark ? "rgba(239,68,68,0.15)" : "rgba(239,68,68,0.2)"}` }}>
+            <label className="font-mono uppercase" style={{ fontSize: 10, letterSpacing: "0.1em", color: "rgba(239,68,68,0.6)" }}>
+              Danger Zone
+            </label>
+
+            {!showDeleteConfirm ? (
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                className="w-full mt-3 flex items-center justify-center gap-2 rounded-xl font-medium transition-all duration-200"
+                style={{
+                  padding: "12px",
+                  fontSize: 14,
+                  background: isDark ? "rgba(239,68,68,0.08)" : "rgba(239,68,68,0.06)",
+                  border: `1px solid ${isDark ? "rgba(239,68,68,0.2)" : "rgba(239,68,68,0.15)"}`,
+                  color: "rgb(239,68,68)",
+                }}
+              >
+                <Trash2 size={15} />
+                Delete Account
+              </button>
+            ) : (
+              <div className="mt-3 flex flex-col gap-3">
+                <p style={{ fontSize: 13, color: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)" }}>
+                  This will permanently delete your account, all research sessions, and uploaded files. Type <strong style={{ color: "rgb(239,68,68)" }}>DELETE</strong> to confirm.
+                </p>
+                <input
+                  type="text"
+                  value={deleteConfirmText}
+                  onChange={(e) => setDeleteConfirmText(e.target.value)}
+                  placeholder='Type "DELETE" to confirm'
+                  className="w-full rounded-xl bg-transparent outline-none"
+                  style={{
+                    padding: "12px 16px",
+                    fontSize: 14,
+                    color: "rgb(239,68,68)",
+                    background: isDark ? "rgba(239,68,68,0.05)" : "rgba(239,68,68,0.03)",
+                    border: `1px solid ${isDark ? "rgba(239,68,68,0.2)" : "rgba(239,68,68,0.15)"}`,
+                  }}
+                />
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => { setShowDeleteConfirm(false); setDeleteConfirmText(""); }}
+                    className="flex-1 rounded-xl font-medium transition-all duration-200"
+                    style={{
+                      padding: "12px",
+                      fontSize: 13,
+                      background: c.surface,
+                      border: `1px solid ${c.border}`,
+                      color: c.textMuted,
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={async () => {
+                      setDeleting(true);
+                      try {
+                        const { data: { session } } = await supabase.auth.getSession();
+                        const resp = await supabase.functions.invoke("delete-account", {
+                          headers: { Authorization: `Bearer ${session?.access_token}` },
+                        });
+                        if (resp.error) throw resp.error;
+                        await supabase.auth.signOut();
+                        navigate("/");
+                        toast.success("Account deleted");
+                      } catch {
+                        toast.error("Failed to delete account");
+                      }
+                      setDeleting(false);
+                    }}
+                    disabled={deleteConfirmText !== "DELETE" || deleting}
+                    className="flex-1 flex items-center justify-center gap-2 rounded-xl font-medium transition-all duration-200 disabled:opacity-40"
+                    style={{
+                      padding: "12px",
+                      fontSize: 13,
+                      background: "rgb(239,68,68)",
+                      color: "#fff",
+                    }}
+                  >
+                    {deleting ? (
+                      <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <><Trash2 size={14} /> Delete Forever</>
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </motion.div>
       </div>
     </div>
