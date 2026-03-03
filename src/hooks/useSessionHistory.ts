@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { getDeviceId } from "@/lib/deviceId";
+import { useAuth } from "@/hooks/useAuth";
 import type { TaskState } from "@/types/aria";
 
 export interface SessionSummary {
@@ -20,18 +20,19 @@ export interface FullSession extends SessionSummary {
 export function useSessionHistory() {
   const [sessions, setSessions] = useState<SessionSummary[]>([]);
   const [loading, setLoading] = useState(true);
-  const deviceId = getDeviceId();
+  const { user } = useAuth();
 
   const fetchSessions = useCallback(async () => {
+    if (!user) { setSessions([]); setLoading(false); return; }
     const { data } = await supabase
       .from("research_sessions")
       .select("id, query, report_title, created_at, events_count")
-      .eq("device_id", deviceId)
+      .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .limit(50);
     setSessions(data ?? []);
     setLoading(false);
-  }, [deviceId]);
+  }, [user]);
 
   useEffect(() => {
     fetchSessions();
@@ -39,10 +40,11 @@ export function useSessionHistory() {
 
   const saveSession = useCallback(
     async (task: TaskState) => {
-      if (!task.report) return;
+      if (!task.report || !user) return;
       await supabase.from("research_sessions").insert({
         id: task.id,
-        device_id: deviceId,
+        user_id: user.id,
+        device_id: user.id, // legacy column - use user_id
         query: task.query,
         report_title: task.report.title,
         report_markdown: task.report.markdown,
@@ -51,58 +53,62 @@ export function useSessionHistory() {
       });
       fetchSessions();
     },
-    [deviceId, fetchSessions]
+    [user, fetchSessions]
   );
 
   const loadSession = useCallback(
     async (sessionId: string): Promise<FullSession | null> => {
+      if (!user) return null;
       const { data } = await supabase
         .from("research_sessions")
         .select("*")
         .eq("id", sessionId)
-        .eq("device_id", deviceId)
+        .eq("user_id", user.id)
         .single();
       if (!data) return null;
       return { ...data, report_sources: data.report_sources as any };
     },
-    [deviceId]
+    [user]
   );
 
   const deleteSession = useCallback(
     async (sessionId: string) => {
+      if (!user) return;
       await supabase
         .from("research_sessions")
         .delete()
         .eq("id", sessionId)
-        .eq("device_id", deviceId);
+        .eq("user_id", user.id);
       fetchSessions();
     },
-    [deviceId, fetchSessions]
+    [user, fetchSessions]
   );
 
   const shareSession = useCallback(
     async (sessionId: string): Promise<string | null> => {
+      if (!user) return null;
       const shareId = crypto.randomUUID().slice(0, 8);
       const { error } = await supabase
         .from("research_sessions")
         .update({ share_id: shareId })
         .eq("id", sessionId)
-        .eq("device_id", deviceId);
+        .eq("user_id", user.id);
       if (error) return null;
       return shareId;
     },
-    [deviceId]
+    [user]
   );
 
   const unshareSession = useCallback(
     async (sessionId: string) => {
+      if (!user) return;
       await supabase
         .from("research_sessions")
         .update({ share_id: null })
         .eq("id", sessionId)
-        .eq("device_id", deviceId);
+        .eq("user_id", user.id);
     },
-    [deviceId]
+    [user]
   );
 
   return { sessions, loading, saveSession, loadSession, deleteSession, shareSession, unshareSession, refetch: fetchSessions };
