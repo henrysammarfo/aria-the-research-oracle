@@ -1,66 +1,39 @@
 import { motion } from "framer-motion";
-import { MessageSquare, Cpu, Search, Brain, Code, FileText, FileDown } from "lucide-react";
+import { MessageSquare, Cpu, Search, Brain, Code, FileText, FileDown, ChevronRight } from "lucide-react";
 
-const steps = [
+const pipeline = [
   {
+    phase: "INPUT",
     icon: MessageSquare,
     label: "Your Question",
-    description: "Ask any complex research question or analysis task",
-    color: "text-white",
-    bg: "rgba(255,255,255,0.08)",
-    borderColor: "rgba(255,255,255,0.15)",
+    detail: '"Analyze the economic impact of AI on software engineering jobs"',
+    accent: "#fff",
   },
   {
+    phase: "PLAN",
     icon: Cpu,
-    label: "Orchestrator",
-    description: "GLM-4-Plus decomposes into subtasks & plans execution",
-    color: "text-cyan-400",
-    bg: "rgba(34,211,238,0.08)",
-    borderColor: "rgba(34,211,238,0.2)",
+    label: "Orchestrator decomposes task",
+    detail: "GLM-4-Plus → 4 subtasks identified → dependency graph built",
+    accent: "#22D3EE",
   },
   {
-    icon: Search,
-    label: "Researcher",
-    description: "Searches the web, fetches sources, tracks citations",
-    color: "text-blue-400",
-    bg: "rgba(96,165,250,0.08)",
-    borderColor: "rgba(96,165,250,0.2)",
-    sub: true,
+    phase: "EXECUTE",
+    icon: null,
+    label: "Agents execute in dependency order",
+    agents: [
+      { icon: Search, name: "Researcher", status: "47 sources found", accent: "#3B82F6" },
+      { icon: Brain, name: "Analyst", status: "5 findings, 2 gaps identified", accent: "#A855F7" },
+      { icon: Code, name: "Coder", status: "3 charts generated", accent: "#10B981" },
+      { icon: FileText, name: "Writer", status: "2,400 word report drafted", accent: "#F59E0B" },
+    ],
+    accent: "#fff",
   },
   {
-    icon: Brain,
-    label: "Analyst",
-    description: "GLM-Z1 deep reasoning — patterns, gaps, insights",
-    color: "text-purple-400",
-    bg: "rgba(192,132,252,0.08)",
-    borderColor: "rgba(192,132,252,0.2)",
-    sub: true,
-  },
-  {
-    icon: Code,
-    label: "Coder",
-    description: "Generates & executes Python in a secure sandbox",
-    color: "text-emerald-400",
-    bg: "rgba(52,211,153,0.08)",
-    borderColor: "rgba(52,211,153,0.2)",
-    sub: true,
-  },
-  {
-    icon: FileText,
-    label: "Writer",
-    description: "Synthesizes findings into a structured report",
-    color: "text-amber-400",
-    bg: "rgba(251,191,36,0.08)",
-    borderColor: "rgba(251,191,36,0.2)",
-    sub: true,
-  },
-  {
+    phase: "OUTPUT",
     icon: FileDown,
-    label: "Final Report",
-    description: "Cited, exportable markdown & PDF with executive summary",
-    color: "text-white",
-    bg: "rgba(255,255,255,0.08)",
-    borderColor: "rgba(255,255,255,0.15)",
+    label: "Structured Report",
+    detail: "Executive summary + findings + charts + citations → MD / HTML / PDF",
+    accent: "#fff",
   },
 ];
 
@@ -68,172 +41,207 @@ const HowItWorksSection = () => {
   return (
     <section
       className="relative w-full overflow-hidden"
-      style={{ background: "#000", padding: "120px 0" }}
+      style={{ background: "#000", padding: "140px 0 120px" }}
     >
-      {/* Subtle divider line */}
       <div
         className="absolute top-0 left-1/2 -translate-x-1/2 h-px"
         style={{
-          width: "60%",
-          background:
-            "linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)",
+          width: "80%",
+          background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent)",
         }}
       />
 
       {/* Header */}
       <motion.div
-        className="text-center mx-auto px-6"
-        style={{ maxWidth: 600 }}
+        className="mx-auto px-6 md:px-16 mb-20"
+        style={{ maxWidth: 1100 }}
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number] }}
       >
-        <span
-          className="inline-flex items-center rounded-full font-medium mb-6"
-          style={{
-            background: "rgba(255,255,255,0.06)",
-            border: "1px solid rgba(255,255,255,0.1)",
-            borderRadius: 20,
-            padding: "6px 16px",
-            fontSize: 12,
-            color: "rgba(255,255,255,0.6)",
-            letterSpacing: "0.05em",
-            textTransform: "uppercase",
-          }}
-        >
-          How It Works
-        </span>
-        <h2
-          className="font-medium mt-4"
-          style={{
-            fontSize: "clamp(28px, 4vw, 42px)",
-            lineHeight: 1.2,
-            background:
-              "linear-gradient(144.5deg, #FFFFFF 28%, rgba(255,255,255,0.4) 100%)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            backgroundClip: "text",
-          }}
-        >
-          From Question to Report in Minutes
-        </h2>
-        <p
-          className="text-white/50 font-normal mt-5"
-          style={{ fontSize: 15, lineHeight: 1.7 }}
-        >
-          Watch ARIA think, search, analyze, and write — all streamed live to
-          your dashboard.
-        </p>
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+          <div style={{ maxWidth: 520 }}>
+            <span
+              className="inline-block font-mono tracking-wider mb-4"
+              style={{
+                fontSize: 11,
+                color: "rgba(255,255,255,0.3)",
+                textTransform: "uppercase",
+                letterSpacing: "0.15em",
+              }}
+            >
+              // execution_pipeline
+            </span>
+            <h2
+              className="font-medium"
+              style={{
+                fontSize: "clamp(32px, 4.5vw, 48px)",
+                lineHeight: 1.15,
+                color: "#fff",
+              }}
+            >
+              Question in.
+              <br />
+              <span style={{ color: "rgba(255,255,255,0.35)" }}>
+                Report out.
+              </span>
+            </h2>
+          </div>
+          <p
+            className="font-normal"
+            style={{
+              fontSize: 14,
+              lineHeight: 1.7,
+              color: "rgba(255,255,255,0.35)",
+              maxWidth: 340,
+            }}
+          >
+            One API call triggers a full autonomous pipeline. Every step is
+            streamed live via SSE — you watch ARIA think in real-time.
+          </p>
+        </div>
       </motion.div>
 
-      {/* Flow */}
-      <div
-        className="relative mx-auto mt-16 px-6"
-        style={{ maxWidth: 720 }}
-      >
-        {/* Vertical connector line */}
-        <motion.div
-          className="absolute left-1/2 -translate-x-1/2 w-px"
-          style={{
-            top: 0,
-            bottom: 0,
-            background:
-              "linear-gradient(180deg, transparent, rgba(255,255,255,0.1) 10%, rgba(255,255,255,0.1) 90%, transparent)",
-          }}
-          initial={{ scaleY: 0 }}
-          whileInView={{ scaleY: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1.2, ease: "easeOut" }}
-        />
-
-        <div className="flex flex-col items-center" style={{ gap: 0 }}>
-          {steps.map((step, i) => {
-            const isAgent = step.sub;
-            return (
-              <motion.div
-                key={step.label}
-                className="relative w-full flex justify-center"
-                style={{ paddingTop: i === 0 ? 0 : isAgent ? 12 : 24, paddingBottom: isAgent ? 12 : 24 }}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-40px" }}
-                transition={{
-                  duration: 0.5,
-                  delay: i * 0.08,
-                  ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number],
+      {/* Pipeline visualization */}
+      <div className="mx-auto px-6 md:px-16" style={{ maxWidth: 1100 }}>
+        {pipeline.map((step, i) => (
+          <motion.div
+            key={step.phase}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-30px" }}
+            transition={{
+              duration: 0.5,
+              delay: i * 0.1,
+              ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number],
+            }}
+          >
+            {/* Phase row */}
+            <div
+              className="flex items-start gap-6 md:gap-10"
+              style={{
+                padding: "28px 0",
+                borderBottom: "1px solid rgba(255,255,255,0.05)",
+              }}
+            >
+              {/* Phase label */}
+              <div
+                className="flex-shrink-0 font-mono font-medium hidden md:block"
+                style={{
+                  width: 80,
+                  fontSize: 10,
+                  letterSpacing: "0.15em",
+                  color: "rgba(255,255,255,0.2)",
+                  paddingTop: 4,
                 }}
               >
-                {/* Node */}
-                <div
-                  className={`relative flex items-center gap-4 rounded-xl transition-all duration-300 hover:scale-[1.02] ${
-                    isAgent ? "ml-8 md:ml-16" : ""
-                  }`}
-                  style={{
-                    background: step.bg,
-                    border: `1px solid ${step.borderColor}`,
-                    padding: isAgent ? "16px 24px" : "20px 28px",
-                    width: isAgent ? "85%" : "100%",
-                    maxWidth: isAgent ? 520 : 600,
-                  }}
-                >
-                  {/* Icon */}
+                {step.phase}
+              </div>
+
+              {/* Connector */}
+              <div className="flex flex-col items-center flex-shrink-0" style={{ width: 32 }}>
+                {step.icon ? (
                   <div
-                    className={`flex-shrink-0 flex items-center justify-center rounded-lg ${step.color}`}
+                    className="flex items-center justify-center rounded-lg"
                     style={{
-                      width: isAgent ? 36 : 44,
-                      height: isAgent ? 36 : 44,
-                      background: "rgba(255,255,255,0.05)",
+                      width: 32,
+                      height: 32,
+                      border: `1px solid ${step.accent}25`,
+                      color: step.accent,
                     }}
                   >
-                    <step.icon size={isAgent ? 18 : 22} />
+                    <step.icon size={16} />
                   </div>
-
-                  <div className="min-w-0">
-                    <h3
-                      className={`font-medium ${step.color}`}
-                      style={{ fontSize: isAgent ? 15 : 17 }}
-                    >
-                      {step.label}
-                    </h3>
-                    <p
-                      className="text-white/40 font-normal mt-1"
-                      style={{ fontSize: isAgent ? 12 : 13, lineHeight: 1.5 }}
-                    >
-                      {step.description}
-                    </p>
-                  </div>
-
-                  {/* Step number */}
-                  <span
-                    className="absolute -left-3 top-1/2 -translate-y-1/2 flex items-center justify-center rounded-full text-white/30 font-medium"
+                ) : (
+                  <div
+                    className="flex items-center justify-center rounded-lg"
                     style={{
-                      width: 24,
-                      height: 24,
-                      fontSize: 10,
-                      background: "#000",
-                      border: `1px solid ${step.borderColor}`,
+                      width: 32,
+                      height: 32,
+                      border: "1px solid rgba(255,255,255,0.08)",
+                      color: "rgba(255,255,255,0.3)",
                     }}
                   >
-                    {i + 1}
-                  </span>
-                </div>
-
-                {/* Connector dot */}
-                {i < steps.length - 1 && (
+                    <ChevronRight size={14} />
+                  </div>
+                )}
+                {i < pipeline.length - 1 && (
                   <div
-                    className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 rounded-full"
                     style={{
-                      width: 6,
-                      height: 6,
-                      background: "rgba(255,255,255,0.15)",
+                      width: 1,
+                      flex: 1,
+                      minHeight: 20,
+                      background: "rgba(255,255,255,0.06)",
+                      marginTop: 4,
                     }}
                   />
                 )}
-              </motion.div>
-            );
-          })}
-        </div>
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 min-w-0">
+                <h3
+                  className="text-white font-medium mb-1"
+                  style={{ fontSize: 16 }}
+                >
+                  {step.label}
+                </h3>
+
+                {step.detail && (
+                  <p
+                    className="font-mono"
+                    style={{
+                      fontSize: 12,
+                      lineHeight: 1.6,
+                      color: "rgba(255,255,255,0.25)",
+                    }}
+                  >
+                    {step.detail}
+                  </p>
+                )}
+
+                {/* Agent sub-items */}
+                {step.agents && (
+                  <div
+                    className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4"
+                  >
+                    {step.agents.map((agent) => (
+                      <div
+                        key={agent.name}
+                        className="flex items-center gap-3 rounded-lg"
+                        style={{
+                          padding: "12px 16px",
+                          background: `${agent.accent}08`,
+                          border: `1px solid ${agent.accent}15`,
+                        }}
+                      >
+                        <agent.icon size={16} style={{ color: agent.accent }} />
+                        <div className="min-w-0">
+                          <span
+                            className="font-medium block"
+                            style={{ fontSize: 13, color: agent.accent }}
+                          >
+                            {agent.name}
+                          </span>
+                          <span
+                            className="font-mono block"
+                            style={{
+                              fontSize: 11,
+                              color: "rgba(255,255,255,0.25)",
+                            }}
+                          >
+                            {agent.status}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        ))}
       </div>
     </section>
   );
