@@ -49,7 +49,7 @@ export default function ChatMessage({ message, isDark }: ChatMessageProps) {
         <div
           className="rounded-2xl max-w-[90%] sm:max-w-[75%] md:max-w-[70%]"
           style={{
-            padding: "12px 16px",
+            padding: "10px 14px",
             background: c.userBg,
             color: c.userText,
             fontSize: 14,
