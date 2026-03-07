@@ -40,6 +40,7 @@ const pipeline = [
 const HowItWorksSection = () => {
   return (
     <section
+      id="how-it-works"
       className="relative w-full overflow-hidden"
       style={{ background: "#000", padding: "140px 0 120px" }}
     >
