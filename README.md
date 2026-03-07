@@ -44,22 +44,59 @@ When Z.AI returns 429 (rate limit) or 402 (credits), ARIA automatically uses Lov
 ## Run locally
 
 ```sh
-git clone <YOUR_GIT_URL>
+git clone https://github.com/henrysammarfo/aria-the-research-oracle.git
 cd aria-the-research-oracle
+cp .env.example .env
+# Edit .env: set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY (see below)
 npm i
 npm run dev
 ```
 
-The research pipeline runs in a **Supabase Edge Function** and needs **at least one** of these secrets:
+**Env:** Copy `.env.example` to `.env` and set with **your own** Supabase project (Settings → API): `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`. The pipeline runs in Supabase Edge Functions; use your project and your secrets (see [For judges](#for-judges--reviewers-clone-and-run) for full steps).
 
-- **ZAI_API_KEY** (primary): Z.AI API key in Supabase Edge Function secrets. Get a key at [Z.AI Open Platform](https://chat.z.ai/). Use your **API key** (the long value, e.g. `your-api-id.xxxx`) — not the API ID alone.
-- **LOVABLE_API_KEY** (fallback): Lovable’s AI gateway key. When Z.AI returns 429 (rate limit) or 402 (credits) or another error, ARIA uses Lovable/Gemini so the app still works. Set both for best experience.
+Pipeline needs **at least one** of these in **your** Supabase Edge Function secrets:
+- **ZAI_API_KEY** (primary): Z.AI API key. Get a key at [Z.AI Open Platform](https://chat.z.ai/). Use your **API key** (the long value, e.g. `your-api-id.xxxx`) — not the API ID alone.
+- **LOVABLE_API_KEY** (fallback): Lovable’s AI gateway key. When Z.AI returns 429 (rate limit) or 402 (credits), ARIA uses Lovable/Gemini. Set both for best experience.
 
 Details:
   - Z.AI: ARIA uses **GLM-4-Plus** (concurrency 20) for Orchestrator, Researcher, Writer — better for free tier — and **GLM-4.7** (concurrency 3) for Analyst and Coder. Agents run sequentially. When Z.AI returns 429 or 402, ARIA switches to Lovable/Gemini for that call.
   - **Free tier / no credits:** If you see “AI credits exhausted”, that’s Z.AI 402; with `LOVABLE_API_KEY` set, the next call will use Gemini and the pipeline continues.
 
 Without **both** keys, set at least one; the pipeline will use Z.AI only if `ZAI_API_KEY` is set, or Lovable only if `LOVABLE_API_KEY` is set.
+
+## For judges / reviewers (clone and run)
+
+**Option 1 — Live demo (no clone):** Use the **[live demo link](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID)** from our submission. Sign in and run a research query to see the full pipeline.
+
+**Option 2 — Clone and run locally (use your own backend):**
+
+1. **Clone and install**
+   ```sh
+   git clone https://github.com/henrysammarfo/aria-the-research-oracle.git
+   cd aria-the-research-oracle
+   npm i
+   ```
+
+2. **Configure env**
+   - Copy `.env.example` to `.env`.
+   - Create your **own** Supabase project at [supabase.com](https://supabase.com).
+   - Deploy the Edge Function: link your repo and deploy `supabase/functions/aria-research`, or use Supabase CLI.
+   - In Supabase → Project Settings → Edge Functions → Secrets, set **your** `ZAI_API_KEY` and/or `LOVABLE_API_KEY` (get Z.AI key at [chat.z.ai](https://chat.z.ai/)).
+   - In `.env`, set `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` from **your** project (Supabase dashboard → Settings → API).
+
+3. **Run**
+   ```sh
+   npm run dev
+   ```
+   Open the URL shown, go to Dashboard, and run a research query. The pipeline uses your Supabase project and your API keys.
+
+4. **Optional — E2E test**
+   ```sh
+   npm run test:e2e-pipeline
+   ```
+   Verifies the pipeline returns a report (~2–3 min). Uses the Supabase URL and anon key from your `.env`.
+
+**No API keys or credentials are shared by the authors.** Use the live demo or your own Supabase project and your own keys.
 
 ## Deploy
 
