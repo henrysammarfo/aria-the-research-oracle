@@ -153,7 +153,7 @@ const Dashboard = () => {
   return (
     <div
       className={`flex flex-col h-screen w-full ${isDark ? "dashboard-dark" : "dashboard-light"}`}
-      style={{ background: isDark ? "#0A0A0A" : "#F5F5F4" }}
+      style={{ background: isDark ? "#0A0A0A" : "#FAF9F7" }}
     >
       {/* Top bar */}
       <div
