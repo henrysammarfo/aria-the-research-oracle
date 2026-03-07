@@ -44,17 +44,17 @@ export default function ChatThread({
   }, [messages.length, researchEvents.length, isStreaming]);
 
   const c = {
-    empty: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.3)",
-    emptyText: isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.5)",
+    empty: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.45)",
+    emptyText: isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.7)",
     researchBg: isDark
       ? "rgba(255,255,255,0.02)"
-      : "rgba(0,0,0,0.02)",
+      : "rgba(0,0,0,0.03)",
     researchBorder: isDark
       ? "rgba(255,255,255,0.06)"
-      : "rgba(0,0,0,0.08)",
-    eventText: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)",
-    eventDim: isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.3)",
-    streamingDot: isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.3)",
+      : "rgba(0,0,0,0.12)",
+    eventText: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.75)",
+    eventDim: isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.5)",
+    streamingDot: isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.5)",
   };
 
   return (

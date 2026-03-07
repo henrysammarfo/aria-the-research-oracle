@@ -19,15 +19,15 @@ const ReportView = forwardRef<HTMLDivElement, ReportViewProps>(({ report, isDark
 
   const c = {
     text: isDark ? "rgba(255,255,255,0.95)" : "rgba(0,0,0,0.95)",
-    textBody: isDark ? "rgba(255,255,255,0.75)" : "rgba(0,0,0,0.8)",
-    dim: isDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.45)",
-    ghost: isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.18)",
-    btnText: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.7)",
-    btnBg: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.06)",
-    btnBorder: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.16)",
-    border: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.14)",
-    sourceDim: isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.4)",
-    sourceText: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.75)",
+    textBody: isDark ? "rgba(255,255,255,0.75)" : "rgba(0,0,0,0.88)",
+    dim: isDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.55)",
+    ghost: isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.2)",
+    btnText: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.75)",
+    btnBg: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.07)",
+    btnBorder: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.18)",
+    border: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.16)",
+    sourceDim: isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.5)",
+    sourceText: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.8)",
   };
 
   const handleCopy = async () => {
