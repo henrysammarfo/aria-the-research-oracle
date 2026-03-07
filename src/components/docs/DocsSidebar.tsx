@@ -13,11 +13,18 @@ const categoryIcons: Record<DocCategory, typeof Book> = {
 interface DocsSidebarProps {
   selectedId: string | null;
   onSelect: (article: DocArticle) => void;
+  mobile?: boolean;
 }
 
-export default function DocsSidebar({ selectedId, onSelect }: DocsSidebarProps) {
+export default function DocsSidebar({ selectedId, onSelect, mobile }: DocsSidebarProps) {
   return (
-    <nav className="hidden lg:block w-56 shrink-0 sticky top-24 self-start max-h-[calc(100vh-8rem)] overflow-y-auto pr-4">
+    <nav
+      className={cn(
+        mobile
+          ? "block"
+          : "hidden lg:block w-56 shrink-0 sticky top-24 self-start max-h-[calc(100vh-8rem)] overflow-y-auto pr-4"
+      )}
+    >
       {categoryOrder.map((cat) => {
         const Icon = categoryIcons[cat];
         const items = articles.filter((a) => a.category === cat);

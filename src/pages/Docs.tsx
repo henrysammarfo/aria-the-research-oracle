@@ -1,14 +1,16 @@
 import { useState, useMemo } from "react";
-import { Search, ChevronRight, ArrowLeft } from "lucide-react";
+import { Search, ChevronRight, ArrowLeft, Menu } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import DocsSidebar from "@/components/docs/DocsSidebar";
 import { articles, categoryLabels, type DocArticle, type DocCategory } from "@/components/docs/DocsData";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const Docs = () => {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<DocCategory>("all");
   const [selectedArticle, setSelectedArticle] = useState<DocArticle | null>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const filtered = useMemo(() => {
     return articles.filter((a) => {
@@ -23,27 +25,52 @@ const Docs = () => {
 
   const handleSelect = (article: DocArticle) => {
     setSelectedArticle(article);
+    setMobileOpen(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="dark min-h-screen bg-background text-foreground">
       <Navbar />
 
       <div className="max-w-6xl mx-auto px-6 pb-24 pt-8 flex gap-8">
-        {/* Sidebar TOC */}
+        {/* Desktop Sidebar TOC */}
         <DocsSidebar selectedId={selectedArticle?.id ?? null} onSelect={handleSelect} />
 
         {/* Main content */}
         <div className="flex-1 min-w-0">
-          {/* Header */}
-          <div className="mb-12">
-            <h1 className="font-bold tracking-tight text-foreground" style={{ fontSize: "clamp(2rem, 5vw, 3rem)" }}>
-              Documentation
-            </h1>
-            <p className="mt-3 text-muted-foreground" style={{ fontSize: 16, maxWidth: 560 }}>
-              API reference, user guides, and everything you need to get the most out of ARIA.
-            </p>
+          {/* Header + mobile TOC trigger */}
+          <div className="mb-12 flex items-start justify-between gap-4">
+            <div>
+              <h1 className="font-bold tracking-tight text-foreground" style={{ fontSize: "clamp(2rem, 5vw, 3rem)" }}>
+                Documentation
+              </h1>
+              <p className="mt-3 text-muted-foreground" style={{ fontSize: 16, maxWidth: 560 }}>
+                API reference, user guides, and everything you need to get the most out of ARIA.
+              </p>
+            </div>
+
+            {/* Mobile TOC button */}
+            <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+              <SheetTrigger asChild>
+                <button className="lg:hidden flex items-center gap-2 shrink-0 mt-2 px-3 py-2 rounded-lg border border-border bg-card text-muted-foreground hover:text-foreground transition-colors text-sm">
+                  <Menu size={16} />
+                  <span className="hidden sm:inline">Contents</span>
+                </button>
+              </SheetTrigger>
+              <SheetContent side="left" className="dark w-72 p-0 bg-background border-border">
+                <div className="p-6 pt-10">
+                  <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground mb-6">
+                    Table of Contents
+                  </h2>
+                  <DocsSidebar
+                    selectedId={selectedArticle?.id ?? null}
+                    onSelect={handleSelect}
+                    mobile
+                  />
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
 
           {selectedArticle ? (
@@ -97,7 +124,7 @@ const Docs = () => {
                   />
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
                   {(Object.keys(categoryLabels) as DocCategory[]).map((cat) => {
                     const active = category === cat;
                     return (
