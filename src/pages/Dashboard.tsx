@@ -382,7 +382,7 @@ const Dashboard = () => {
                 {mobilePanel === "stream" ? (
                   <div className="flex-1 overflow-hidden flex flex-col">
                     <div className="flex-shrink-0" style={{ padding: "8px 16px" }}>
-                      <TaskInput onSubmit={handleSubmit} isLoading={isRunning} isDark={isDark} />
+                      <TaskInput onSubmit={handleSubmit} isLoading={isRunning} isDark={isDark} showExamples={false} />
                     </div>
                     <AgentStream events={task.events} isDark={isDark} />
                   </div>
