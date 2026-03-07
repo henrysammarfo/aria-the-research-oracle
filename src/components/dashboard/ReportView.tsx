@@ -1,6 +1,6 @@
 import ReactMarkdown from "react-markdown";
 import { Copy, Download, ExternalLink, CheckCircle2, FileText, Share2, Link2, X } from "lucide-react";
-import { useState, useCallback } from "react";
+import { useState, useCallback, forwardRef } from "react";
 import { toast } from "sonner";
 import type { TaskState } from "@/types/aria";
 
@@ -12,22 +12,22 @@ interface ReportViewProps {
   onUnshare?: () => Promise<void>;
 }
 
-const ReportView = ({ report, isDark = true, sessionId, onShare, onUnshare }: ReportViewProps) => {
+const ReportView = forwardRef<HTMLDivElement, ReportViewProps>(({ report, isDark = true, sessionId, onShare, onUnshare }, ref) => {
   const [copied, setCopied] = useState(false);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [sharing, setSharing] = useState(false);
 
   const c = {
     text: isDark ? "rgba(255,255,255,0.95)" : "rgba(0,0,0,0.9)",
-    textBody: isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)",
-    dim: isDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.35)",
-    ghost: isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.12)",
-    btnText: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.55)",
-    btnBg: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
-    btnBorder: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)",
-    border: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)",
-    sourceDim: isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.3)",
-    sourceText: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)",
+    textBody: isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.75)",
+    dim: isDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.45)",
+    ghost: isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.15)",
+    btnText: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.65)",
+    btnBg: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.06)",
+    btnBorder: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.14)",
+    border: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.12)",
+    sourceDim: isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.4)",
+    sourceText: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.7)",
   };
 
   const handleCopy = async () => {
@@ -99,16 +99,16 @@ const ReportView = ({ report, isDark = true, sessionId, onShare, onUnshare }: Re
   const btnStyle = { padding: "6px 12px", fontSize: 12, background: c.btnBg, border: `1px solid ${c.btnBorder}`, color: c.btnText };
 
   return (
-    <div className="flex flex-col h-full">
+    <div ref={ref} className="flex flex-col h-full">
       {/* Toolbar */}
-      <div className="flex items-center justify-between flex-shrink-0" style={{ padding: "12px 20px", borderBottom: `1px solid ${c.border}` }}>
-        <div>
-          <h3 className="font-medium" style={{ fontSize: 14, color: c.text }}>{report.title}</h3>
+      <div className="flex items-center justify-between flex-shrink-0 flex-wrap gap-2" style={{ padding: "12px 20px", borderBottom: `1px solid ${c.border}` }}>
+        <div className="min-w-0">
+          <h3 className="font-medium truncate" style={{ fontSize: 14, color: c.text }}>{report.title}</h3>
           <span className="font-mono" style={{ fontSize: 10, color: c.dim }}>
             {new Date().toLocaleDateString()} · {report.markdown.split(/\s+/).length} words · {report.sources.length} citations
           </span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <button onClick={handleCopy} className="flex items-center gap-1.5 rounded-lg transition-colors" style={btnStyle}>
             {copied ? <CheckCircle2 size={13} /> : <Copy size={13} />}
             {copied ? "Copied" : "Copy"}
@@ -146,23 +146,23 @@ const ReportView = ({ report, isDark = true, sessionId, onShare, onUnshare }: Re
       )}
 
       {/* Report content */}
-      <div className="flex-1 overflow-y-auto" style={{ padding: "24px 28px" }}>
+      <div className="flex-1 overflow-y-auto" style={{ padding: "24px 20px" }}>
         <div
           className={`prose prose-sm max-w-none ${isDark ? "prose-invert" : ""}`}
           style={{
             '--tw-prose-headings': c.text,
             '--tw-prose-body': c.textBody,
-            '--tw-prose-bold': isDark ? "rgba(255,255,255,0.85)" : "rgba(0,0,0,0.8)",
+            '--tw-prose-bold': isDark ? "rgba(255,255,255,0.85)" : "rgba(0,0,0,0.85)",
             '--tw-prose-links': '#3B82F6',
-            '--tw-prose-code': isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)",
-            '--tw-prose-pre-bg': isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)",
-            '--tw-prose-pre-code': isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)",
+            '--tw-prose-code': isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.75)",
+            '--tw-prose-pre-bg': isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
+            '--tw-prose-pre-code': isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.75)",
             '--tw-prose-th-borders': c.ghost,
             '--tw-prose-td-borders': c.border,
-            '--tw-prose-bullets': isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.35)",
-            '--tw-prose-counters': isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.35)",
-            '--tw-prose-quotes': isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)",
-            '--tw-prose-quote-borders': isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)",
+            '--tw-prose-bullets': isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.5)",
+            '--tw-prose-counters': isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.5)",
+            '--tw-prose-quotes': isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)",
+            '--tw-prose-quote-borders': isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.2)",
             color: c.textBody,
           } as React.CSSProperties}
         >
@@ -177,7 +177,7 @@ const ReportView = ({ report, isDark = true, sessionId, onShare, onUnshare }: Re
             {report.sources.map((s, i) => (
               <a key={i} href={s.url} target="_blank" rel="noopener noreferrer" className="group flex items-center gap-3 rounded-lg transition-colors" style={{ padding: "8px 12px" }}>
                 <span className="font-mono flex-shrink-0" style={{ fontSize: 11, width: 20, color: c.sourceDim }}>[{i + 1}]</span>
-                <span className="transition-colors" style={{ fontSize: 13, color: c.sourceText }}>{s.title}</span>
+                <span className="transition-colors break-all" style={{ fontSize: 13, color: c.sourceText }}>{s.title}</span>
                 <ExternalLink size={12} className="ml-auto flex-shrink-0 transition-colors" style={{ color: c.ghost }} />
               </a>
             ))}
@@ -186,6 +186,8 @@ const ReportView = ({ report, isDark = true, sessionId, onShare, onUnshare }: Re
       </div>
     </div>
   );
-};
+});
+
+ReportView.displayName = "ReportView";
 
 export default ReportView;

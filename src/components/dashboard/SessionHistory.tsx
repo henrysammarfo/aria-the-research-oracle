@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Clock, Trash2, FileText, Plus, Search } from "lucide-react";
 import type { SessionSummary } from "@/hooks/useSessionHistory";
@@ -24,14 +24,15 @@ const SessionHistory = ({ sessions, loading, activeId, onSelect, onDelete, onNew
     : sessions;
 
   const c = {
-    text: isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.55)",
-    textActive: isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.8)",
-    dim: isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.3)",
-    ghost: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.12)",
-    border: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)",
-    surface: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)",
-    activeBg: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)",
-    hoverBg: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)",
+    text: isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.65)",
+    textActive: isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.85)",
+    dim: isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.4)",
+    ghost: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.2)",
+    border: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.1)",
+    surface: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.04)",
+    activeBg: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)",
+    hoverBg: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.04)",
+    dateDim: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.3)",
   };
 
   return (
@@ -56,7 +57,7 @@ const SessionHistory = ({ sessions, loading, activeId, onSelect, onDelete, onNew
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search sessions..."
             className="bg-transparent outline-none w-full"
-            style={{ fontSize: 11, color: c.text, ...({ '::placeholder': { color: c.ghost } } as any) }}
+            style={{ fontSize: 11, color: c.text }}
           />
         </div>
       </div>
@@ -69,7 +70,7 @@ const SessionHistory = ({ sessions, loading, activeId, onSelect, onDelete, onNew
         ) : filtered.length === 0 ? (
           <div className="text-center py-8" style={{ padding: "0 16px" }}>
             <FileText size={20} className="mx-auto mb-2" style={{ color: c.ghost }} />
-            <p className="font-mono" style={{ fontSize: 11, color: c.ghost }}>{search.trim() ? "No matching sessions" : "No research sessions yet"}</p>
+            <p className="font-mono" style={{ fontSize: 11, color: c.dim }}>{search.trim() ? "No matching sessions" : "No research sessions yet"}</p>
           </div>
         ) : (
           <AnimatePresence initial={false}>
@@ -86,16 +87,16 @@ const SessionHistory = ({ sessions, loading, activeId, onSelect, onDelete, onNew
                         {session.report_title || session.query}
                       </p>
                       <div className="flex items-center gap-2 mt-1">
-                        <span className="font-mono" style={{ fontSize: 9, color: c.ghost }}>{new Date(session.created_at).toLocaleDateString()}</span>
+                        <span className="font-mono" style={{ fontSize: 9, color: c.dateDim }}>{new Date(session.created_at).toLocaleDateString()}</span>
                         {session.events_count != null && session.events_count > 0 && (
-                          <span className="font-mono" style={{ fontSize: 9, color: c.ghost }}>{session.events_count} events</span>
+                          <span className="font-mono" style={{ fontSize: 9, color: c.dateDim }}>{session.events_count} events</span>
                         )}
                       </div>
                     </div>
                     <button
                       onClick={(e) => { e.stopPropagation(); onDelete(session.id); }}
                       className="opacity-0 group-hover:opacity-100 transition-all flex-shrink-0 mt-0.5"
-                      style={{ padding: 2, color: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.2)" }}
+                      style={{ padding: 2, color: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.3)" }}
                     >
                       <Trash2 size={12} />
                     </button>
