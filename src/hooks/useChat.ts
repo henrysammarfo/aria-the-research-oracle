@@ -191,6 +191,9 @@ export function useChat() {
           signal: controller.signal,
         });
 
+        // Check content-type to see if it's a JSON signal or SSE stream
+        const contentType = resp.headers.get("content-type") || "";
+
         if (!resp.ok) {
           const errData = await resp.json().catch(() => ({}));
           if (resp.status === 429) {
@@ -202,6 +205,17 @@ export function useChat() {
           }
           setIsStreaming(false);
           return;
+        }
+
+        // Handle deep_research signal from classifier
+        if (contentType.includes("application/json")) {
+          const data = await resp.json();
+          if (data.action === "deep_research") {
+            setIsStreaming(false);
+            // Auto-trigger deep research with the original query
+            triggerResearchInternal(convId!, content, userMsg);
+            return;
+          }
         }
 
         if (!resp.body) throw new Error("No response body");
@@ -257,7 +271,6 @@ export function useChat() {
                 });
               }
             } catch {
-              // partial JSON, wait for more
               textBuffer = line + "\n" + textBuffer;
               break;
             }
@@ -296,6 +309,90 @@ export function useChat() {
     [user, conversationId, messages, createConversation]
   );
 
+  // Internal: run research pipeline given a convId and existing user message
+  const triggerResearchInternal = useCallback(
+    async (convId: string, query: string, existingUserMsg?: ChatMsg) => {
+      if (!user) return;
+
+      // If no user message was already added (manual deep research), add one
+      if (!existingUserMsg) {
+        const userMsg: ChatMsg = {
+          id: crypto.randomUUID(),
+          role: "user",
+          content: `🔬 Deep Research: ${query}`,
+          type: "text",
+          created_at: new Date().toISOString(),
+        };
+        setMessages((prev) => [...prev, userMsg]);
+        await supabase.from("chat_messages").insert({
+          id: userMsg.id,
+          conversation_id: convId,
+          user_id: user.id,
+          role: "user",
+          content: userMsg.content,
+          message_type: "text",
+          metadata: {},
+        } as any);
+      }
+
+      setIsResearching(true);
+      setResearchEvents([]);
+
+      const onEvent = (event: AgentEvent) => {
+        setResearchEvents((prev) => [...prev, event]);
+      };
+
+      let report: any;
+      try {
+        report = await runAIPipeline(query, onEvent);
+      } catch (err) {
+        console.error("AI pipeline failed, falling back:", err);
+        toast.error("AI backend unavailable — running demo mode");
+        setResearchEvents([]);
+        try {
+          report = await runSimulatedPipeline(query, onEvent);
+        } catch (simErr) {
+          console.error("Simulation failed:", simErr);
+          setIsResearching(false);
+          toast.error("Research failed");
+          return;
+        }
+      }
+
+      const reportMsg: ChatMsg = {
+        id: crypto.randomUUID(),
+        role: "assistant",
+        content: report.title,
+        type: "report",
+        metadata: { report },
+        created_at: new Date().toISOString(),
+      };
+      setMessages((prev) => [...prev, reportMsg]);
+      setIsResearching(false);
+      setResearchEvents([]);
+
+      await supabase.from("chat_messages").insert({
+        id: reportMsg.id,
+        conversation_id: convId,
+        user_id: user.id,
+        role: "assistant",
+        content: report.title,
+        message_type: "report",
+        metadata: { report },
+      } as any);
+
+      await supabase
+        .from("research_sessions")
+        .update({
+          report_title: report.title,
+          report_markdown: report.markdown,
+          report_sources: report.sources,
+        })
+        .eq("id", convId);
+    },
+    [user]
+  );
+
   const startResearch = useCallback(
     async (query: string, files?: UploadedFile[]) => {
       if (!user) return;
@@ -305,7 +402,6 @@ export function useChat() {
         convId = await createConversation(query);
       }
 
-      // Upload files
       let fileRefs: { name: string; url: string }[] = [];
       if (files && files.length > 0) {
         try {
@@ -320,7 +416,6 @@ export function useChat() {
           ? `${query}\n\n[Attached: ${fileRefs.map((f) => f.name).join(", ")}]`
           : query;
 
-      // Add user message
       const userMsg: ChatMsg = {
         id: crypto.randomUUID(),
         role: "user",
@@ -341,66 +436,9 @@ export function useChat() {
         metadata: userMsg.metadata || {},
       } as any);
 
-      setIsResearching(true);
-      setResearchEvents([]);
-
-      const onEvent = (event: AgentEvent) => {
-        setResearchEvents((prev) => [...prev, event]);
-      };
-
-      let report: any;
-      try {
-        report = await runAIPipeline(fullQuery, onEvent);
-      } catch (err) {
-        console.error("AI pipeline failed, falling back:", err);
-        toast.error("AI backend unavailable — running demo mode");
-        setResearchEvents([]);
-        try {
-          report = await runSimulatedPipeline(query, onEvent);
-        } catch (simErr) {
-          console.error("Simulation failed:", simErr);
-          setIsResearching(false);
-          toast.error("Research failed");
-          return;
-        }
-      }
-
-      // Add report message
-      const reportMsg: ChatMsg = {
-        id: crypto.randomUUID(),
-        role: "assistant",
-        content: report.title,
-        type: "report",
-        metadata: { report },
-        created_at: new Date().toISOString(),
-      };
-      setMessages((prev) => [...prev, reportMsg]);
-      setIsResearching(false);
-      setResearchEvents([]);
-
-      // Save report message
-      await supabase.from("chat_messages").insert({
-        id: reportMsg.id,
-        conversation_id: convId,
-        user_id: user.id,
-        role: "assistant",
-        content: report.title,
-        message_type: "report",
-        metadata: { report },
-      } as any);
-
-      // Update session with report data
-      await supabase
-        .from("research_sessions")
-        .update({
-          report_title: report.title,
-          report_markdown: report.markdown,
-          report_sources: report.sources,
-          events_count: researchEvents.length,
-        })
-        .eq("id", convId);
+      await triggerResearchInternal(convId, fullQuery, userMsg);
     },
-    [user, conversationId, messages, createConversation, researchEvents.length]
+    [user, conversationId, createConversation, triggerResearchInternal]
   );
 
   return {
