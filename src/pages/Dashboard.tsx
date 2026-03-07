@@ -304,7 +304,7 @@ const Dashboard = () => {
             style={{
               width: isMobile ? 280 : 260,
               borderRight: `1px solid ${c.panelBorder}`,
-              background: isDark ? "#0A0A0A" : "#F5F5F4",
+              background: isDark ? "#0A0A0A" : "#FAF9F7",
             }}
           >
             <SessionHistory

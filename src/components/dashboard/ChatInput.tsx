@@ -74,20 +74,20 @@ export default function ChatInput({
   };
 
   const c = {
-    text: isDark ? "#fff" : "#0a0a0a",
-    surface: isDark ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.95)",
-    border: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.18)",
-    dim: isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.55)",
-    chipText: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.8)",
-    chipBg: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)",
-    chipBorder: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.15)",
-    fileBg: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.06)",
-    fileBorder: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.14)",
-    fileText: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.7)",
+    text: isDark ? "#fff" : "#000",
+    surface: isDark ? "rgba(255,255,255,0.04)" : "#FFFFFF",
+    border: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.15)",
+    dim: isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.7)",
+    chipText: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.9)",
+    chipBg: isDark ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.9)",
+    chipBorder: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.12)",
+    fileBg: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
+    fileBorder: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.12)",
+    fileText: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.85)",
     // Toggle colors
-    toggleOff: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.07)",
-    toggleOffBorder: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.16)",
-    toggleOffText: isDark ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.6)",
+    toggleOff: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)",
+    toggleOffBorder: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.14)",
+    toggleOffText: isDark ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.75)",
     toggleOn: isDark ? "rgba(59,130,246,0.15)" : "rgba(59,130,246,0.12)",
     toggleOnBorder: isDark ? "rgba(59,130,246,0.35)" : "rgba(59,130,246,0.35)",
     toggleOnText: "#3B82F6",
@@ -99,7 +99,7 @@ export default function ChatInput({
       : isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)",
     sendText: hasContent
       ? "#fff"
-      : isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)",
+      : isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.5)",
   };
 
   // Override sendText for non-deep mode
