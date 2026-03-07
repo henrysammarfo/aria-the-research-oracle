@@ -87,7 +87,7 @@ const FAQSection = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
-    <section className="relative w-full overflow-hidden" style={{ background: "#000", padding: "120px 0" }}>
+    <section id="faq" className="relative w-full overflow-hidden" style={{ background: "#000", padding: "120px 0" }}>
       <div
         className="absolute top-0 left-1/2 -translate-x-1/2 h-px"
         style={{ width: "60%", background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)" }}

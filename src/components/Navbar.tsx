@@ -1,42 +1,48 @@
 import { ChevronDown, Menu, X } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { useNavigate, useLocation } from "react-router-dom";
 
-const navData = [
+interface NavItem {
+  title: string;
+  desc: string;
+  href?: string;
+  section?: string;
+}
+
+const navData: { label: string; items: NavItem[] }[] = [
   {
     label: "Research",
     items: [
-      { title: "Web Search", desc: "Tavily-powered multi-source search" },
-      { title: "Source Extraction", desc: "Parse and clean any webpage" },
-      { title: "Citation Tracking", desc: "Full provenance for every claim" },
+      { title: "Web Search", desc: "Multi-source intelligent search", section: "agents" },
+      { title: "Source Extraction", desc: "Parse and clean any webpage", section: "agents" },
+      { title: "Citation Tracking", desc: "Full provenance for every claim", section: "stats" },
     ],
   },
   {
     label: "Agents",
     items: [
-      { title: "Orchestrator", desc: "GLM-4-Plus task decomposition" },
-      { title: "Researcher", desc: "Autonomous web research agent" },
-      { title: "Analyst", desc: "GLM-Z1 deep reasoning engine" },
-      { title: "Coder", desc: "Sandboxed Python execution" },
-      { title: "Writer", desc: "Structured report synthesis" },
+      { title: "Orchestrator", desc: "Task decomposition engine", section: "agents" },
+      { title: "Researcher", desc: "Autonomous web research agent", section: "agents" },
+      { title: "Analyst", desc: "Deep reasoning engine", section: "agents" },
+      { title: "Coder", desc: "Sandboxed Python execution", section: "agents" },
+      { title: "Writer", desc: "Structured report synthesis", section: "agents" },
     ],
   },
   {
-    label: "Features",
+    label: "How It Works",
     items: [
-      { title: "Live Streaming", desc: "Watch agents think via SSE" },
-      { title: "PDF Export", desc: "Publication-ready reports" },
-      { title: "Session Memory", desc: "Redis + SQLite persistence" },
-      { title: "Docker Deploy", desc: "One-command production setup" },
+      { title: "Pipeline Overview", desc: "See the multi-agent flow", section: "how-it-works" },
+      { title: "Live Streaming", desc: "Watch agents think in real-time", section: "how-it-works" },
+      { title: "PDF Export", desc: "Publication-ready reports", section: "how-it-works" },
     ],
   },
   {
-    label: "Docs",
+    label: "More",
     items: [
-      { title: "Quick Start", desc: "Get running in 5 minutes" },
-      { title: "API Reference", desc: "Endpoints and schemas" },
-      { title: "Architecture", desc: "Multi-agent system design" },
-      { title: "GitHub", desc: "Open-source repository" },
+      { title: "FAQ", desc: "Common questions answered", section: "faq" },
+      { title: "Dashboard", desc: "Start researching now", href: "/dashboard" },
+      { title: "Sign In", desc: "Access your account", href: "/auth" },
     ],
   },
 ];
@@ -45,10 +51,12 @@ const GlowPillButton = ({
   children,
   variant = "dark",
   href,
+  onClick,
 }: {
   children: React.ReactNode;
   variant?: "dark" | "light";
   href?: string;
+  onClick?: () => void;
 }) => {
   const isDark = variant === "dark";
   const inner = (
@@ -73,12 +81,27 @@ const GlowPillButton = ({
   if (href) {
     return <a href={href} className="inline-block">{inner}</a>;
   }
-  return <button className="inline-block">{inner}</button>;
+  return <button className="inline-block" onClick={onClick}>{inner}</button>;
 };
 
 export { GlowPillButton };
 
-const NavDropdown = ({ label, items }: { label: string; items: { title: string; desc: string }[] }) => {
+function scrollToSection(sectionId: string) {
+  const el = document.getElementById(sectionId);
+  if (el) {
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+
+const NavDropdown = ({
+  label,
+  items,
+  onNavigate,
+}: {
+  label: string;
+  items: NavItem[];
+  onNavigate: (item: NavItem) => void;
+}) => {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const timeout = useRef<ReturnType<typeof setTimeout>>();
@@ -112,7 +135,6 @@ const NavDropdown = ({ label, items }: { label: string; items: { title: string; 
         />
       </button>
 
-      {/* Dropdown */}
       <div
         className={`absolute top-full left-1/2 -translate-x-1/2 pt-3 transition-all duration-200 ${
           open ? "opacity-100 translate-y-0 pointer-events-auto" : "opacity-0 -translate-y-2 pointer-events-none"
@@ -128,10 +150,13 @@ const NavDropdown = ({ label, items }: { label: string; items: { title: string; 
           }}
         >
           {items.map((item, i) => (
-            <a
+            <button
               key={item.title}
-              href="#"
-              className="block transition-colors duration-150 hover:bg-white/[0.04]"
+              onClick={() => {
+                onNavigate(item);
+                setOpen(false);
+              }}
+              className="block w-full text-left transition-colors duration-150 hover:bg-white/[0.04]"
               style={{
                 padding: "14px 18px",
                 borderBottom: i < items.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none",
@@ -146,7 +171,7 @@ const NavDropdown = ({ label, items }: { label: string; items: { title: string; 
               >
                 {item.desc}
               </span>
-            </a>
+            </button>
           ))}
         </div>
       </div>
@@ -154,7 +179,15 @@ const NavDropdown = ({ label, items }: { label: string; items: { title: string; 
   );
 };
 
-const MobileAccordion = ({ label, items }: { label: string; items: { title: string; desc: string }[] }) => {
+const MobileAccordion = ({
+  label,
+  items,
+  onNavigate,
+}: {
+  label: string;
+  items: NavItem[];
+  onNavigate: (item: NavItem) => void;
+}) => {
   const [open, setOpen] = useState(false);
   return (
     <div style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
@@ -180,10 +213,10 @@ const MobileAccordion = ({ label, items }: { label: string; items: { title: stri
           >
             <div className="pb-4 flex flex-col gap-1">
               {items.map((item) => (
-                <a
+                <button
                   key={item.title}
-                  href="#"
-                  className="block rounded-lg hover:bg-white/[0.04] transition-colors"
+                  onClick={() => onNavigate(item)}
+                  className="block w-full text-left rounded-lg hover:bg-white/[0.04] transition-colors"
                   style={{ padding: "10px 16px" }}
                 >
                   <span className="block text-white/80 font-medium" style={{ fontSize: 14 }}>
@@ -192,7 +225,7 @@ const MobileAccordion = ({ label, items }: { label: string; items: { title: stri
                   <span className="block mt-0.5" style={{ fontSize: 12, color: "rgba(255,255,255,0.25)" }}>
                     {item.desc}
                   </span>
-                </a>
+                </button>
               ))}
             </div>
           </motion.div>
@@ -204,8 +237,9 @@ const MobileAccordion = ({ label, items }: { label: string; items: { title: stri
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  // Lock body scroll when mobile menu is open
   useEffect(() => {
     if (mobileOpen) {
       document.body.style.overflow = "hidden";
@@ -214,6 +248,21 @@ const Navbar = () => {
     }
     return () => { document.body.style.overflow = ""; };
   }, [mobileOpen]);
+
+  const handleNavigate = (item: NavItem) => {
+    setMobileOpen(false);
+    if (item.href) {
+      navigate(item.href);
+    } else if (item.section) {
+      if (location.pathname !== "/") {
+        navigate("/");
+        // Wait for page to render then scroll
+        setTimeout(() => scrollToSection(item.section!), 100);
+      } else {
+        scrollToSection(item.section);
+      }
+    }
+  };
 
   return (
     <>
@@ -227,16 +276,18 @@ const Navbar = () => {
           }
         `}</style>
 
-        <div
+        <a
+          href="/"
+          onClick={(e) => { e.preventDefault(); navigate("/"); }}
           className="text-white font-bold tracking-[0.2em] text-xl uppercase"
           style={{ height: 25, display: "flex", alignItems: "center" }}
         >
           ARIA
-        </div>
+        </a>
 
         <div className="hidden md:flex items-center" style={{ gap: 30 }}>
           {navData.map((nav) => (
-            <NavDropdown key={nav.label} label={nav.label} items={nav.items} />
+            <NavDropdown key={nav.label} label={nav.label} items={nav.items} onNavigate={handleNavigate} />
           ))}
         </div>
 
@@ -245,7 +296,6 @@ const Navbar = () => {
             <GlowPillButton variant="dark" href="/auth">Get Early Access</GlowPillButton>
           </div>
 
-          {/* Hamburger */}
           <button
             className="md:hidden flex items-center justify-center text-white"
             style={{ width: 40, height: 40 }}
@@ -257,7 +307,6 @@ const Navbar = () => {
         </div>
       </nav>
 
-      {/* Mobile Overlay */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
@@ -271,10 +320,8 @@ const Navbar = () => {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25 }}
           >
-            {/* Spacer for navbar */}
             <div style={{ height: 65 }} />
 
-            {/* Nav items */}
             <motion.div
               className="flex-1 overflow-y-auto px-6 pt-4"
               initial={{ y: 20, opacity: 0 }}
@@ -282,11 +329,13 @@ const Navbar = () => {
               transition={{ duration: 0.3, delay: 0.1 }}
             >
               {navData.map((nav) => (
-                <MobileAccordion key={nav.label} label={nav.label} items={nav.items} />
+                <MobileAccordion key={nav.label} label={nav.label} items={nav.items} onNavigate={handleNavigate} />
               ))}
 
               <div className="mt-8">
-                <GlowPillButton variant="light">Get Early Access</GlowPillButton>
+                <GlowPillButton variant="light" onClick={() => { setMobileOpen(false); navigate("/auth"); }}>
+                  Get Early Access
+                </GlowPillButton>
               </div>
 
               <p
