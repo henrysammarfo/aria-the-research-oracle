@@ -66,7 +66,7 @@ Without **both** keys, set at least one; the pipeline will use Z.AI only if `ZAI
 
 ## For judges / reviewers (clone and run)
 
-**Option 1 — Live demo (no clone):** Use the **[live demo link](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID)** from our submission. Sign in and run a research query to see the full pipeline.
+**Option 1 — Live demo (no clone):** Use the **[live demo](https://ariaoracle.lovable.app)** from our submission. Sign in and run a research query to see the full pipeline.
 
 **Option 2 — Clone and run locally (use your own backend):**
 
