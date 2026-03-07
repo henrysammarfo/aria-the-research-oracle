@@ -31,14 +31,14 @@ const AgentStream = ({ events, isDark = true }: { events: AgentEvent[]; isDark?:
   }, [events.length]);
 
   const c = {
-    text: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)",
-    textThinking: isDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.35)",
-    borderEvent: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.05)",
-    codeBg: isDark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.03)",
-    codeBorder: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.06)",
-    codeText: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)",
-    timestamp: isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.18)",
-    empty: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)",
+    text: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.7)",
+    textThinking: isDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.45)",
+    borderEvent: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.08)",
+    codeBg: isDark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.04)",
+    codeBorder: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.08)",
+    codeText: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.7)",
+    timestamp: isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.3)",
+    empty: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.3)",
   };
 
   return (
@@ -71,7 +71,7 @@ const AgentStream = ({ events, isDark = true }: { events: AgentEvent[]; isDark?:
                 borderBottom: `1px solid ${c.borderEvent}`,
               }}
             >
-              <div className="flex items-center gap-2 mb-1.5">
+              <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                 <AgentIcon size={13} style={{ color: agent.accent }} />
                 <span className="font-medium" style={{ fontSize: 12, color: agent.accent }}>{event.agent}</span>
                 <span className="rounded font-mono" style={{ fontSize: 9, padding: "1px 6px", color: style.color, background: `${style.color}15`, letterSpacing: "0.05em", textTransform: "uppercase" }}>
@@ -81,17 +81,17 @@ const AgentStream = ({ events, isDark = true }: { events: AgentEvent[]; isDark?:
               </div>
 
               {isCode ? (
-                <pre className="rounded-lg overflow-x-auto font-mono" style={{ fontSize: 11, lineHeight: 1.5, padding: "12px 14px", color: c.codeText, background: c.codeBg, border: `1px solid ${c.codeBorder}`, whiteSpace: "pre-wrap" }}>
+                <pre className="rounded-lg overflow-x-auto font-mono" style={{ fontSize: 11, lineHeight: 1.5, padding: "12px 14px", color: c.codeText, background: c.codeBg, border: `1px solid ${c.codeBorder}`, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
                   {displayContent}
                 </pre>
               ) : isPlan ? (
-                <div className="rounded-lg font-mono" style={{ fontSize: 11, padding: "10px 14px", color: "rgba(34,211,238,0.5)", background: "rgba(34,211,238,0.03)", border: "1px solid rgba(34,211,238,0.08)", lineHeight: 1.6 }}>
+                <div className="rounded-lg font-mono" style={{ fontSize: 11, padding: "10px 14px", color: isDark ? "rgba(34,211,238,0.5)" : "rgba(0,120,150,0.8)", background: isDark ? "rgba(34,211,238,0.03)" : "rgba(34,211,238,0.06)", border: isDark ? "1px solid rgba(34,211,238,0.08)" : "1px solid rgba(34,211,238,0.15)", lineHeight: 1.6 }}>
                   {(() => {
                     try {
                       const plan = JSON.parse(displayContent);
                       return plan.plan?.map((t: any) => (
                         <div key={t.id} className="flex gap-2">
-                          <span style={{ color: "rgba(34,211,238,0.3)" }}>{t.id}.</span>
+                          <span style={{ color: isDark ? "rgba(34,211,238,0.3)" : "rgba(0,120,150,0.4)" }}>{t.id}.</span>
                           <span>[{t.type}]</span>
                           <span style={{ color: c.text }}>{t.description}</span>
                         </div>
@@ -102,7 +102,7 @@ const AgentStream = ({ events, isDark = true }: { events: AgentEvent[]; isDark?:
                   })()}
                 </div>
               ) : (
-                <p className={isThinking ? "italic" : ""} style={{ fontSize: 13, lineHeight: 1.55, color: isThinking ? c.textThinking : isComplete ? "rgba(16,185,129,0.7)" : c.text }}>
+                <p className={isThinking ? "italic" : ""} style={{ fontSize: 13, lineHeight: 1.55, color: isThinking ? c.textThinking : isComplete ? (isDark ? "rgba(16,185,129,0.7)" : "rgba(5,120,80,0.8)") : c.text }}>
                   {displayContent}
                 </p>
               )}
