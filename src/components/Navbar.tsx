@@ -40,6 +40,7 @@ const navData: { label: string; items: NavItem[] }[] = [
   {
     label: "More",
     items: [
+      { title: "Documentation", desc: "API reference, guides & KB", href: "/docs" },
       { title: "FAQ", desc: "Common questions answered", section: "faq" },
       { title: "Dashboard", desc: "Start researching now", href: "/dashboard" },
       { title: "Sign In", desc: "Access your account", href: "/auth" },
