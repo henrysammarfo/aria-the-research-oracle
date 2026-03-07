@@ -350,7 +350,7 @@ const Dashboard = () => {
           <div className="flex flex-col flex-1 overflow-hidden">
             {!showStream ? (
               <div className="flex-1 overflow-auto" style={{ padding: "20px 16px" }}>
-                <TaskInput onSubmit={handleSubmit} isLoading={isRunning} isDark={isDark} />
+                <TaskInput onSubmit={handleSubmit} isLoading={isRunning} isDark={isDark} showExamples={true} />
               </div>
             ) : (
               <>
