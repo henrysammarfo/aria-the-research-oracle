@@ -105,7 +105,7 @@ export default function ChatInput({
         ? "rgba(59,130,246,0.15)"
         : "rgba(59,130,246,0.1)"
       : "transparent",
-    researchText: hasContent ? "#3B82F6" : c?.dim || (isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.3)"),
+    researchText: hasContent ? "#3B82F6" : (isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.3)"),
     researchBorder: hasContent
       ? isDark
         ? "rgba(59,130,246,0.3)"
