@@ -45,9 +45,9 @@ export default function ChatMessage({ message, isDark }: ChatMessageProps) {
 
   if (isUser) {
     return (
-      <div className="flex justify-end mb-4">
+      <div className="flex justify-end mb-3 sm:mb-4">
         <div
-          className="rounded-2xl max-w-[85%] sm:max-w-[70%]"
+          className="rounded-2xl max-w-[90%] sm:max-w-[75%] md:max-w-[70%]"
           style={{
             padding: "12px 16px",
             background: c.userBg,
