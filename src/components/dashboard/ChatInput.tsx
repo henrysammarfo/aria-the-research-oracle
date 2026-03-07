@@ -1,0 +1,314 @@
+import { useState, useRef } from "react";
+import { Send, Sparkles, Paperclip, X, FileText, Telescope } from "lucide-react";
+import type { UploadedFile } from "@/hooks/useChat";
+
+const exampleQueries = [
+  "What are the latest trends in AI?",
+  "Explain quantum computing simply",
+  "Compare React vs Vue for 2026",
+  "Summarize the EU AI Act",
+];
+
+interface ChatInputProps {
+  onSend: (message: string, files?: UploadedFile[]) => void;
+  onDeepResearch: (query: string, files?: UploadedFile[]) => void;
+  isLoading: boolean;
+  isDark: boolean;
+  showExamples: boolean;
+}
+
+export default function ChatInput({
+  onSend,
+  onDeepResearch,
+  isLoading,
+  isDark,
+  showExamples,
+}: ChatInputProps) {
+  const [value, setValue] = useState("");
+  const [files, setFiles] = useState<UploadedFile[]>([]);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const hasContent = value.trim() || files.length > 0;
+
+  const handleSend = () => {
+    if (!hasContent || isLoading) return;
+    onSend(value.trim(), files.length > 0 ? files : undefined);
+    setValue("");
+    setFiles([]);
+  };
+
+  const handleDeepResearch = () => {
+    if (!hasContent || isLoading) return;
+    onDeepResearch(value.trim(), files.length > 0 ? files : undefined);
+    setValue("");
+    setFiles([]);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+    if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+      e.preventDefault();
+      handleDeepResearch();
+    }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = Array.from(e.target.files || []);
+    const newFiles: UploadedFile[] = selectedFiles.map((file) => {
+      const uf: UploadedFile = { file };
+      if (file.type.startsWith("image/")) {
+        uf.preview = URL.createObjectURL(file);
+      }
+      return uf;
+    });
+    setFiles((prev) => [...prev, ...newFiles].slice(0, 5));
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const removeFile = (index: number) => {
+    setFiles((prev) => {
+      const f = prev[index];
+      if (f.preview) URL.revokeObjectURL(f.preview);
+      return prev.filter((_, i) => i !== index);
+    });
+  };
+
+  const c = {
+    text: isDark ? "#fff" : "#111",
+    placeholder: isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.45)",
+    surface: isDark ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.9)",
+    border: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.15)",
+    dim: isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.4)",
+    chipText: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.7)",
+    chipBg: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)",
+    chipBorder: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.12)",
+    sendBg: hasContent
+      ? isDark
+        ? "#fff"
+        : "#111"
+      : isDark
+        ? "rgba(255,255,255,0.08)"
+        : "rgba(0,0,0,0.08)",
+    sendText: hasContent
+      ? isDark
+        ? "#000"
+        : "#fff"
+      : isDark
+        ? "rgba(255,255,255,0.3)"
+        : "rgba(0,0,0,0.3)",
+    researchBg: hasContent
+      ? isDark
+        ? "rgba(59,130,246,0.15)"
+        : "rgba(59,130,246,0.1)"
+      : "transparent",
+    researchText: hasContent ? "#3B82F6" : c?.dim || (isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.3)"),
+    researchBorder: hasContent
+      ? isDark
+        ? "rgba(59,130,246,0.3)"
+        : "rgba(59,130,246,0.25)"
+      : isDark
+        ? "rgba(255,255,255,0.06)"
+        : "rgba(0,0,0,0.1)",
+    fileBg: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
+    fileBorder: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)",
+    fileText: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)",
+  };
+
+  return (
+    <div className="flex flex-col gap-3">
+      {showExamples && (
+        <div className="flex flex-col gap-2 mb-2">
+          <span
+            className="flex items-center gap-1.5 font-mono"
+            style={{
+              fontSize: 10,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              color: c.dim,
+            }}
+          >
+            <Sparkles size={10} /> try asking
+          </span>
+          <div className="flex flex-wrap gap-2">
+            {exampleQueries.map((q) => (
+              <button
+                key={q}
+                onClick={() => {
+                  setValue(q);
+                  textareaRef.current?.focus();
+                }}
+                className="rounded-lg text-left transition-colors duration-150 hover:opacity-80"
+                style={{
+                  padding: "8px 14px",
+                  fontSize: 12,
+                  color: c.chipText,
+                  background: c.chipBg,
+                  border: `1px solid ${c.chipBorder}`,
+                  lineHeight: 1.4,
+                }}
+                disabled={isLoading}
+              >
+                {q}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div
+        className="relative rounded-2xl overflow-hidden"
+        style={{
+          background: c.surface,
+          border: `1px solid ${c.border}`,
+          boxShadow: isDark
+            ? "0 2px 12px rgba(0,0,0,0.3)"
+            : "0 2px 12px rgba(0,0,0,0.08)",
+        }}
+      >
+        {files.length > 0 && (
+          <div className="flex flex-wrap gap-2" style={{ padding: "12px 16px 0" }}>
+            {files.map((f, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-2 rounded-lg"
+                style={{
+                  padding: "4px 10px 4px 6px",
+                  background: c.fileBg,
+                  border: `1px solid ${c.fileBorder}`,
+                }}
+              >
+                {f.preview ? (
+                  <img
+                    src={f.preview}
+                    alt=""
+                    className="w-8 h-8 rounded object-cover"
+                  />
+                ) : (
+                  <FileText size={14} style={{ color: c.fileText }} />
+                )}
+                <span
+                  className="truncate max-w-[100px]"
+                  style={{ fontSize: 11, color: c.fileText }}
+                >
+                  {f.file.name}
+                </span>
+                <button
+                  onClick={() => removeFile(i)}
+                  className="rounded-full flex items-center justify-center"
+                  style={{
+                    width: 16,
+                    height: 16,
+                    background: isDark
+                      ? "rgba(255,255,255,0.1)"
+                      : "rgba(0,0,0,0.1)",
+                    color: c.fileText,
+                  }}
+                >
+                  <X size={10} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <textarea
+          ref={textareaRef}
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="Ask ARIA anything..."
+          rows={2}
+          className="w-full bg-transparent resize-none outline-none"
+          style={{
+            padding: "16px 16px 8px",
+            fontSize: 15,
+            lineHeight: 1.5,
+            color: c.text,
+          }}
+          disabled={isLoading}
+        />
+
+        <div
+          className="flex items-center justify-between"
+          style={{ padding: "4px 12px 10px" }}
+        >
+          <div className="flex items-center gap-1">
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept="image/*,.pdf,.doc,.docx,.txt,.csv,.json,.md"
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isLoading || files.length >= 5}
+              className="rounded-lg transition-colors disabled:opacity-30 p-1.5"
+              style={{ color: c.dim }}
+              title="Attach files"
+            >
+              <Paperclip size={16} />
+            </button>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleDeepResearch}
+              disabled={!hasContent || isLoading}
+              className="flex items-center gap-1.5 rounded-xl font-medium transition-all duration-200 disabled:opacity-30"
+              style={{
+                padding: "7px 14px",
+                fontSize: 12,
+                color: hasContent ? "#3B82F6" : (isDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.3)"),
+                background: hasContent
+                  ? isDark
+                    ? "rgba(59,130,246,0.12)"
+                    : "rgba(59,130,246,0.08)"
+                  : "transparent",
+                border: `1px solid ${hasContent ? (isDark ? "rgba(59,130,246,0.25)" : "rgba(59,130,246,0.2)") : (isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)")}`,
+              }}
+              title="⌘+Enter for deep research"
+            >
+              <Telescope size={14} />
+              <span className="hidden sm:inline">Deep Research</span>
+            </button>
+
+            <button
+              onClick={handleSend}
+              disabled={!hasContent || isLoading}
+              className="flex items-center gap-1.5 rounded-xl font-medium transition-all duration-200 disabled:opacity-30"
+              style={{
+                padding: "7px 14px",
+                fontSize: 12,
+                background: c.sendBg,
+                color: c.sendText,
+              }}
+            >
+              {isLoading ? (
+                <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <Send size={14} />
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {!showExamples && (
+        <div className="flex justify-center">
+          <span
+            className="font-mono"
+            style={{ fontSize: 10, color: c.dim }}
+          >
+            Enter to send · ⌘+Enter for deep research
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
