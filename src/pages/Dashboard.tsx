@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft, Activity, PanelLeftClose, PanelLeft, Sun, Moon, LogOut, Settings, Menu, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import TaskInput from "@/components/dashboard/TaskInput";
+import type { UploadedFile } from "@/components/dashboard/TaskInput";
 import AgentStream from "@/components/dashboard/AgentStream";
 import ReportView from "@/components/dashboard/ReportView";
 import SessionHistory from "@/components/dashboard/SessionHistory";
@@ -15,6 +16,20 @@ import { useAuth } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import type { AgentEvent, TaskState } from "@/types/aria";
+
+async function uploadFiles(files: UploadedFile[], userId: string): Promise<string[]> {
+  const urls: string[] = [];
+  for (const f of files) {
+    const ext = f.file.name.split(".").pop() || "bin";
+    const path = `${userId}/${crypto.randomUUID()}.${ext}`;
+    const { error } = await supabase.storage.from("research-attachments").upload(path, f.file);
+    if (!error) {
+      const { data } = supabase.storage.from("research-attachments").getPublicUrl(path);
+      urls.push(data.publicUrl);
+    }
+  }
+  return urls;
+}
 
 const Dashboard = () => {
   const [task, setTask] = useState<TaskState>({
@@ -52,7 +67,6 @@ const Dashboard = () => {
       });
   }, [user]);
 
-  // Auto-close sidebar on mobile
   useEffect(() => {
     if (!isMobile) return;
     setSidebarOpen(false);
@@ -66,12 +80,13 @@ const Dashboard = () => {
     }
   }, [user]);
 
-  const { sessions, loading, saveSession, loadSession, deleteSession, shareSession, unshareSession } = useSessionHistory();
+  const { sessions, loading, saveSession, loadSession, deleteSession, shareSession, unshareSession, refetch } = useSessionHistory();
   const { signOut } = useAuth();
 
-  const handleSubmit = useCallback(async (query: string) => {
+  const handleSubmit = useCallback(async (query: string, files?: UploadedFile[]) => {
+    const taskId = crypto.randomUUID();
     const newTask: TaskState = {
-      id: crypto.randomUUID(),
+      id: taskId,
       query,
       status: "running",
       events: [],
@@ -82,6 +97,21 @@ const Dashboard = () => {
       setMobilePanel("stream");
     }
 
+    // Upload files if any
+    let fileUrls: string[] = [];
+    if (files && files.length > 0 && user) {
+      try {
+        fileUrls = await uploadFiles(files, user.id);
+      } catch (err) {
+        console.error("File upload failed:", err);
+      }
+    }
+
+    // Append file context to query
+    const fullQuery = fileUrls.length > 0
+      ? `${query}\n\n[Attached files: ${fileUrls.join(", ")}]`
+      : query;
+
     const onEvent = (event: AgentEvent) => {
       setTask((prev) => ({
         ...prev,
@@ -89,34 +119,46 @@ const Dashboard = () => {
       }));
     };
 
-    let finalTask: TaskState | null = null;
-
     try {
-      const report = await runAIPipeline(query, onEvent);
-      setTask((prev) => {
-        finalTask = { ...prev, status: "complete", report };
-        return finalTask;
+      const report = await runAIPipeline(fullQuery, onEvent);
+      const completeTask: TaskState = {
+        id: taskId,
+        query,
+        status: "complete",
+        events: [],
+        report,
+      };
+      setTask((prev) => ({ ...prev, status: "complete", report }));
+
+      // Save session with the complete task data
+      saveSession(completeTask).catch((err) => {
+        console.error("Failed to save session:", err);
+        toast.error("Failed to save session");
       });
     } catch (err) {
       console.error("AI pipeline failed, falling back to simulation:", err);
       toast.error("AI backend unavailable — running demo mode");
-      setTask({ id: crypto.randomUUID(), query, status: "running", events: [] });
-      const report = await runSimulatedPipeline(query, onEvent);
-      setTask((prev) => {
-        finalTask = { ...prev, status: "complete", report };
-        return finalTask;
-      });
-    }
-
-    if (finalTask) {
-      saveSession(finalTask).catch((err) => {
-        console.error("Failed to save session:", err);
-        toast.error("Failed to save session");
-      });
+      const fallbackId = crypto.randomUUID();
+      setTask({ id: fallbackId, query, status: "running", events: [] });
+      try {
+        const report = await runSimulatedPipeline(query, onEvent);
+        const completeTask: TaskState = {
+          id: fallbackId,
+          query,
+          status: "complete",
+          events: [],
+          report,
+        };
+        setTask((prev) => ({ ...prev, status: "complete", report }));
+        saveSession(completeTask).catch(console.error);
+      } catch (simErr) {
+        console.error("Simulation also failed:", simErr);
+        setTask((prev) => ({ ...prev, status: "error" }));
+      }
     }
 
     if (isMobile) setMobilePanel("report");
-  }, [saveSession, isMobile]);
+  }, [saveSession, isMobile, user]);
 
   const handleLoadSession = useCallback(async (sessionId: string) => {
     const session = await loadSession(sessionId);
@@ -158,7 +200,6 @@ const Dashboard = () => {
   const showStream = isRunning || isComplete;
   const isDark = theme === "dark";
 
-  // Light theme uses stronger colors for readability
   const c = {
     topBorder: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.12)",
     dimText: isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.5)",
@@ -313,7 +354,6 @@ const Dashboard = () => {
               </div>
             ) : (
               <>
-                {/* Mobile tab switcher */}
                 <div className="flex flex-shrink-0" style={{ borderBottom: `1px solid ${c.streamBorder}` }}>
                   <button
                     onClick={() => setMobilePanel("stream")}
@@ -429,7 +469,7 @@ const Dashboard = () => {
                         <Activity size={20} style={{ color: c.spinnerIcon }} />
                       </motion.div>
                       <p className="font-mono" style={{ fontSize: 12, color: c.spinnerText }}>
-                        Report will appear here when agents finish
+                        Report generating...
                       </p>
                     </div>
                   </div>
