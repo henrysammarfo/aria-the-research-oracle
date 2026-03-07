@@ -284,19 +284,19 @@ export default function ChatMessage({ message, isDark }: ChatMessageProps) {
             "--tw-prose-body": c.assistantBody,
             "--tw-prose-bold": isDark
               ? "rgba(255,255,255,0.85)"
-              : "rgba(0,0,0,0.85)",
+              : "rgba(0,0,0,0.9)",
             "--tw-prose-links": "#3B82F6",
             "--tw-prose-bullets": c.dim,
             "--tw-prose-counters": c.dim,
             "--tw-prose-code": isDark
               ? "rgba(255,255,255,0.7)"
-              : "rgba(0,0,0,0.7)",
+              : "rgba(0,0,0,0.8)",
             "--tw-prose-pre-bg": isDark
               ? "rgba(255,255,255,0.04)"
-              : "rgba(0,0,0,0.04)",
+              : "rgba(0,0,0,0.05)",
             "--tw-prose-pre-code": isDark
               ? "rgba(255,255,255,0.7)"
-              : "rgba(0,0,0,0.7)",
+              : "rgba(0,0,0,0.8)",
             color: c.assistantBody,
             fontSize: 14,
             lineHeight: 1.7,
