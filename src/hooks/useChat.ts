@@ -191,6 +191,9 @@ export function useChat() {
           signal: controller.signal,
         });
 
+        // Check content-type to see if it's a JSON signal or SSE stream
+        const contentType = resp.headers.get("content-type") || "";
+
         if (!resp.ok) {
           const errData = await resp.json().catch(() => ({}));
           if (resp.status === 429) {
@@ -202,6 +205,17 @@ export function useChat() {
           }
           setIsStreaming(false);
           return;
+        }
+
+        // Handle deep_research signal from classifier
+        if (contentType.includes("application/json")) {
+          const data = await resp.json();
+          if (data.action === "deep_research") {
+            setIsStreaming(false);
+            // Auto-trigger deep research with the original query
+            triggerResearchInternal(convId!, content, userMsg);
+            return;
+          }
         }
 
         if (!resp.body) throw new Error("No response body");
@@ -257,7 +271,6 @@ export function useChat() {
                 });
               }
             } catch {
-              // partial JSON, wait for more
               textBuffer = line + "\n" + textBuffer;
               break;
             }
