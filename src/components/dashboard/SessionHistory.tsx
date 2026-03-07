@@ -24,15 +24,15 @@ const SessionHistory = ({ sessions, loading, activeId, onSelect, onDelete, onNew
     : sessions;
 
   const c = {
-    text: isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.65)",
-    textActive: isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.85)",
-    dim: isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.4)",
-    ghost: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.2)",
-    border: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.1)",
-    surface: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.04)",
-    activeBg: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)",
-    hoverBg: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.04)",
-    dateDim: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.3)",
+    text: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.75)",
+    textActive: isDark ? "rgba(255,255,255,0.75)" : "rgba(0,0,0,0.95)",
+    dim: isDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.5)",
+    ghost: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.25)",
+    border: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.12)",
+    surface: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.05)",
+    activeBg: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.1)",
+    dateDim: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.4)",
+    deleteBtn: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.35)",
   };
 
   return (
@@ -96,7 +96,7 @@ const SessionHistory = ({ sessions, loading, activeId, onSelect, onDelete, onNew
                     <button
                       onClick={(e) => { e.stopPropagation(); onDelete(session.id); }}
                       className="opacity-0 group-hover:opacity-100 transition-all flex-shrink-0 mt-0.5"
-                      style={{ padding: 2, color: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.3)" }}
+                      style={{ padding: 2, color: c.deleteBtn }}
                     >
                       <Trash2 size={12} />
                     </button>
