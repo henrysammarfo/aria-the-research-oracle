@@ -182,8 +182,8 @@ const Dashboard = () => {
 
   const handleNew = useCallback(() => {
     setTask({ id: "", query: "", status: "idle", events: [] });
-    if (isMobile) setSidebarOpen(false);
-  }, [isMobile]);
+    // Don't close sidebar — user should see their sessions list
+  }, []);
 
   const handleShare = useCallback(async () => {
     if (!task.id) return null;
