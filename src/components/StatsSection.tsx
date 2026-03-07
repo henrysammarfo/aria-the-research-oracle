@@ -5,7 +5,7 @@ import { Zap, Target, Clock, FileCheck, Globe, Layers } from "lucide-react";
 const stats = [
   { icon: Clock, value: 10, suffix: "x", label: "Faster Research", description: "vs manual search & synthesis" },
   { icon: Target, value: 95, suffix: "%", label: "Citation Accuracy", description: "Source-grounded findings" },
-  { icon: Layers, value: 4, suffix: "", label: "Specialized Agents", description: "Working in parallel" },
+  { icon: Layers, value: 5, suffix: "", label: "Specialized Agents", description: "Working in dependency order" },
   { icon: Globe, value: 50, suffix: "+", label: "Sources Analyzed", description: "Per research session" },
   { icon: FileCheck, value: 3, suffix: "min", label: "Avg Report Time", description: "From question to PDF" },
   { icon: Zap, value: 3, suffix: "", label: "GLM Models", description: "Orchestrated in harmony" },
