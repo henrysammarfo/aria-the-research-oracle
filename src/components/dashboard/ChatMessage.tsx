@@ -25,22 +25,22 @@ export default function ChatMessage({ message, isDark }: ChatMessageProps) {
   const [copied, setCopied] = useState(false);
 
   const c = {
-    userBg: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
-    userText: isDark ? "rgba(255,255,255,0.9)" : "rgba(0,0,0,0.9)",
-    assistantText: isDark ? "rgba(255,255,255,0.85)" : "rgba(0,0,0,0.85)",
-    assistantBody: isDark ? "rgba(255,255,255,0.72)" : "rgba(0,0,0,0.78)",
-    dim: isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.35)",
-    reportBg: isDark ? "rgba(59,130,246,0.04)" : "rgba(59,130,246,0.03)",
+    userBg: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)",
+    userText: isDark ? "rgba(255,255,255,0.9)" : "rgba(0,0,0,0.95)",
+    assistantText: isDark ? "rgba(255,255,255,0.85)" : "rgba(0,0,0,0.9)",
+    assistantBody: isDark ? "rgba(255,255,255,0.72)" : "rgba(0,0,0,0.85)",
+    dim: isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.5)",
+    reportBg: isDark ? "rgba(59,130,246,0.04)" : "rgba(59,130,246,0.04)",
     reportBorder: isDark
       ? "rgba(59,130,246,0.15)"
-      : "rgba(59,130,246,0.12)",
+      : "rgba(59,130,246,0.18)",
     reportTitle: isDark ? "rgba(255,255,255,0.95)" : "rgba(0,0,0,0.95)",
-    btnText: isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.5)",
-    btnBg: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
-    btnBorder: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)",
-    sourceText: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.65)",
-    sourceDim: isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.35)",
-    border: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)",
+    btnText: isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.65)",
+    btnBg: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.06)",
+    btnBorder: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.15)",
+    sourceText: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.75)",
+    sourceDim: isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.5)",
+    border: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.12)",
   };
 
   if (isUser) {
@@ -284,19 +284,19 @@ export default function ChatMessage({ message, isDark }: ChatMessageProps) {
             "--tw-prose-body": c.assistantBody,
             "--tw-prose-bold": isDark
               ? "rgba(255,255,255,0.85)"
-              : "rgba(0,0,0,0.85)",
+              : "rgba(0,0,0,0.9)",
             "--tw-prose-links": "#3B82F6",
             "--tw-prose-bullets": c.dim,
             "--tw-prose-counters": c.dim,
             "--tw-prose-code": isDark
               ? "rgba(255,255,255,0.7)"
-              : "rgba(0,0,0,0.7)",
+              : "rgba(0,0,0,0.8)",
             "--tw-prose-pre-bg": isDark
               ? "rgba(255,255,255,0.04)"
-              : "rgba(0,0,0,0.04)",
+              : "rgba(0,0,0,0.05)",
             "--tw-prose-pre-code": isDark
               ? "rgba(255,255,255,0.7)"
-              : "rgba(0,0,0,0.7)",
+              : "rgba(0,0,0,0.8)",
             color: c.assistantBody,
             fontSize: 14,
             lineHeight: 1.7,

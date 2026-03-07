@@ -74,32 +74,32 @@ export default function ChatInput({
   };
 
   const c = {
-    text: isDark ? "#fff" : "#111",
-    surface: isDark ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.9)",
-    border: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.15)",
-    dim: isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.4)",
-    chipText: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.7)",
-    chipBg: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)",
-    chipBorder: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.12)",
-    fileBg: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
-    fileBorder: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)",
-    fileText: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)",
+    text: isDark ? "#fff" : "#0a0a0a",
+    surface: isDark ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.95)",
+    border: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.18)",
+    dim: isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.55)",
+    chipText: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.8)",
+    chipBg: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)",
+    chipBorder: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.15)",
+    fileBg: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.06)",
+    fileBorder: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.14)",
+    fileText: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.7)",
     // Toggle colors
-    toggleOff: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)",
-    toggleOffBorder: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.12)",
-    toggleOffText: isDark ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.45)",
-    toggleOn: isDark ? "rgba(59,130,246,0.15)" : "rgba(59,130,246,0.1)",
-    toggleOnBorder: isDark ? "rgba(59,130,246,0.35)" : "rgba(59,130,246,0.3)",
+    toggleOff: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.07)",
+    toggleOffBorder: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.16)",
+    toggleOffText: isDark ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.6)",
+    toggleOn: isDark ? "rgba(59,130,246,0.15)" : "rgba(59,130,246,0.12)",
+    toggleOnBorder: isDark ? "rgba(59,130,246,0.35)" : "rgba(59,130,246,0.35)",
     toggleOnText: "#3B82F6",
     // Send button
     sendBg: hasContent
       ? deepMode
         ? isDark ? "rgba(59,130,246,0.9)" : "#3B82F6"
         : isDark ? "#fff" : "#111"
-      : isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)",
+      : isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)",
     sendText: hasContent
       ? "#fff"
-      : isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.3)",
+      : isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)",
   };
 
   // Override sendText for non-deep mode

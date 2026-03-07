@@ -24,15 +24,15 @@ const SessionHistory = ({ sessions, loading, activeId, onSelect, onDelete, onNew
     : sessions;
 
   const c = {
-    text: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.75)",
+    text: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.8)",
     textActive: isDark ? "rgba(255,255,255,0.75)" : "rgba(0,0,0,0.95)",
-    dim: isDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.5)",
-    ghost: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.25)",
-    border: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.12)",
-    surface: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.05)",
-    activeBg: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.1)",
-    dateDim: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.4)",
-    deleteBtn: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.35)",
+    dim: isDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.6)",
+    ghost: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.3)",
+    border: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.15)",
+    surface: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.06)",
+    activeBg: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.12)",
+    dateDim: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.55)",
+    deleteBtn: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.45)",
   };
 
   return (
