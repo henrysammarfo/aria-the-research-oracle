@@ -26,21 +26,21 @@ export default function ChatInput({
 }: ChatInputProps) {
   const [value, setValue] = useState("");
   const [files, setFiles] = useState<UploadedFile[]>([]);
+  const [deepMode, setDeepMode] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const hasContent = value.trim() || files.length > 0;
 
-  const handleSend = () => {
+  const handleSubmit = () => {
     if (!hasContent || isLoading) return;
-    onSend(value.trim(), files.length > 0 ? files : undefined);
-    setValue("");
-    setFiles([]);
-  };
-
-  const handleDeepResearch = () => {
-    if (!hasContent || isLoading) return;
-    onDeepResearch(value.trim(), files.length > 0 ? files : undefined);
+    const trimmed = value.trim();
+    const f = files.length > 0 ? files : undefined;
+    if (deepMode) {
+      onDeepResearch(trimmed, f);
+    } else {
+      onSend(trimmed, f);
+    }
     setValue("");
     setFiles([]);
   };
@@ -48,11 +48,7 @@ export default function ChatInput({
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSend();
-    }
-    if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
-      e.preventDefault();
-      handleDeepResearch();
+      handleSubmit();
     }
   };
 
@@ -79,44 +75,37 @@ export default function ChatInput({
 
   const c = {
     text: isDark ? "#fff" : "#111",
-    placeholder: isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.45)",
     surface: isDark ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.9)",
     border: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.15)",
     dim: isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.4)",
     chipText: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.7)",
     chipBg: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)",
     chipBorder: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.12)",
-    sendBg: hasContent
-      ? isDark
-        ? "#fff"
-        : "#111"
-      : isDark
-        ? "rgba(255,255,255,0.08)"
-        : "rgba(0,0,0,0.08)",
-    sendText: hasContent
-      ? isDark
-        ? "#000"
-        : "#fff"
-      : isDark
-        ? "rgba(255,255,255,0.3)"
-        : "rgba(0,0,0,0.3)",
-    researchBg: hasContent
-      ? isDark
-        ? "rgba(59,130,246,0.15)"
-        : "rgba(59,130,246,0.1)"
-      : "transparent",
-    researchText: hasContent ? "#3B82F6" : (isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.3)"),
-    researchBorder: hasContent
-      ? isDark
-        ? "rgba(59,130,246,0.3)"
-        : "rgba(59,130,246,0.25)"
-      : isDark
-        ? "rgba(255,255,255,0.06)"
-        : "rgba(0,0,0,0.1)",
     fileBg: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
     fileBorder: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)",
     fileText: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)",
+    // Toggle colors
+    toggleOff: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)",
+    toggleOffBorder: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.12)",
+    toggleOffText: isDark ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.45)",
+    toggleOn: isDark ? "rgba(59,130,246,0.15)" : "rgba(59,130,246,0.1)",
+    toggleOnBorder: isDark ? "rgba(59,130,246,0.35)" : "rgba(59,130,246,0.3)",
+    toggleOnText: "#3B82F6",
+    // Send button
+    sendBg: hasContent
+      ? deepMode
+        ? isDark ? "rgba(59,130,246,0.9)" : "#3B82F6"
+        : isDark ? "#fff" : "#111"
+      : isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)",
+    sendText: hasContent
+      ? "#fff"
+      : isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.3)",
   };
+
+  // Override sendText for non-deep mode
+  const finalSendText = hasContent && !deepMode
+    ? (isDark ? "#000" : "#fff")
+    : c.sendText;
 
   return (
     <div className="flex flex-col gap-3">
@@ -133,7 +122,7 @@ export default function ChatInput({
           >
             <Sparkles size={10} /> try asking
           </span>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1.5 sm:gap-2">
             {exampleQueries.map((q) => (
               <button
                 key={q}
@@ -143,7 +132,7 @@ export default function ChatInput({
                 }}
                 className="rounded-lg text-left transition-colors duration-150 hover:opacity-80"
                 style={{
-                  padding: "8px 14px",
+                  padding: "6px 12px",
                   fontSize: 12,
                   color: c.chipText,
                   background: c.chipBg,
@@ -163,14 +152,15 @@ export default function ChatInput({
         className="relative rounded-2xl overflow-hidden"
         style={{
           background: c.surface,
-          border: `1px solid ${c.border}`,
+          border: `1px solid ${deepMode ? c.toggleOnBorder : c.border}`,
           boxShadow: isDark
             ? "0 2px 12px rgba(0,0,0,0.3)"
             : "0 2px 12px rgba(0,0,0,0.08)",
+          transition: "border-color 0.2s",
         }}
       >
         {files.length > 0 && (
-          <div className="flex flex-wrap gap-2" style={{ padding: "12px 16px 0" }}>
+          <div className="flex flex-wrap gap-2" style={{ padding: "10px 12px 0 12px" }}>
             {files.map((f, i) => (
               <div
                 key={i}
@@ -182,31 +172,17 @@ export default function ChatInput({
                 }}
               >
                 {f.preview ? (
-                  <img
-                    src={f.preview}
-                    alt=""
-                    className="w-8 h-8 rounded object-cover"
-                  />
+                  <img src={f.preview} alt="" className="w-7 h-7 rounded object-cover" />
                 ) : (
-                  <FileText size={14} style={{ color: c.fileText }} />
+                  <FileText size={13} style={{ color: c.fileText }} />
                 )}
-                <span
-                  className="truncate max-w-[100px]"
-                  style={{ fontSize: 11, color: c.fileText }}
-                >
+                <span className="truncate max-w-[80px] sm:max-w-[120px]" style={{ fontSize: 11, color: c.fileText }}>
                   {f.file.name}
                 </span>
                 <button
                   onClick={() => removeFile(i)}
                   className="rounded-full flex items-center justify-center"
-                  style={{
-                    width: 16,
-                    height: 16,
-                    background: isDark
-                      ? "rgba(255,255,255,0.1)"
-                      : "rgba(0,0,0,0.1)",
-                    color: c.fileText,
-                  }}
+                  style={{ width: 16, height: 16, background: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)", color: c.fileText }}
                 >
                   <X size={10} />
                 </button>
@@ -220,23 +196,20 @@ export default function ChatInput({
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Ask ARIA anything..."
+          placeholder={deepMode ? "What should ARIA research in depth?" : "Ask ARIA anything..."}
           rows={2}
           className="w-full bg-transparent resize-none outline-none"
           style={{
-            padding: "16px 16px 8px",
-            fontSize: 15,
+            padding: "14px 14px 6px",
+            fontSize: 14,
             lineHeight: 1.5,
             color: c.text,
           }}
           disabled={isLoading}
         />
 
-        <div
-          className="flex items-center justify-between"
-          style={{ padding: "4px 12px 10px" }}
-        >
-          <div className="flex items-center gap-1">
+        <div className="flex items-center justify-between" style={{ padding: "2px 10px 8px" }}>
+          <div className="flex items-center gap-1.5">
             <input
               ref={fileInputRef}
               type="file"
@@ -252,60 +225,62 @@ export default function ChatInput({
               style={{ color: c.dim }}
               title="Attach files"
             >
-              <Paperclip size={16} />
-            </button>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleDeepResearch}
-              disabled={!hasContent || isLoading}
-              className="flex items-center gap-1.5 rounded-xl font-medium transition-all duration-200 disabled:opacity-30"
-              style={{
-                padding: "7px 14px",
-                fontSize: 12,
-                color: hasContent ? "#3B82F6" : (isDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.3)"),
-                background: hasContent
-                  ? isDark
-                    ? "rgba(59,130,246,0.12)"
-                    : "rgba(59,130,246,0.08)"
-                  : "transparent",
-                border: `1px solid ${hasContent ? (isDark ? "rgba(59,130,246,0.25)" : "rgba(59,130,246,0.2)") : (isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)")}`,
-              }}
-              title="⌘+Enter for deep research"
-            >
-              <Telescope size={14} />
-              <span className="hidden sm:inline">Deep Research</span>
+              <Paperclip size={15} />
             </button>
 
+            {/* Deep Research Toggle */}
             <button
-              onClick={handleSend}
-              disabled={!hasContent || isLoading}
-              className="flex items-center gap-1.5 rounded-xl font-medium transition-all duration-200 disabled:opacity-30"
+              onClick={() => setDeepMode((v) => !v)}
+              className="flex items-center gap-1.5 rounded-full font-medium transition-all duration-200"
               style={{
-                padding: "7px 14px",
-                fontSize: 12,
-                background: c.sendBg,
-                color: c.sendText,
+                padding: "5px 12px",
+                fontSize: 11,
+                color: deepMode ? c.toggleOnText : c.toggleOffText,
+                background: deepMode ? c.toggleOn : c.toggleOff,
+                border: `1px solid ${deepMode ? c.toggleOnBorder : c.toggleOffBorder}`,
               }}
+              title="Toggle deep research mode"
             >
-              {isLoading ? (
-                <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <Send size={14} />
+              <Telescope size={13} />
+              <span className="hidden xs:inline sm:inline">Deep Research</span>
+              {deepMode && (
+                <span
+                  className="rounded-full"
+                  style={{
+                    width: 6,
+                    height: 6,
+                    background: "#3B82F6",
+                    display: "inline-block",
+                  }}
+                />
               )}
             </button>
           </div>
+
+          <button
+            onClick={handleSubmit}
+            disabled={!hasContent || isLoading}
+            className="flex items-center gap-1.5 rounded-xl font-medium transition-all duration-200 disabled:opacity-30"
+            style={{
+              padding: "7px 14px",
+              fontSize: 12,
+              background: c.sendBg,
+              color: finalSendText,
+            }}
+          >
+            {isLoading ? (
+              <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <Send size={14} />
+            )}
+          </button>
         </div>
       </div>
 
       {!showExamples && (
         <div className="flex justify-center">
-          <span
-            className="font-mono"
-            style={{ fontSize: 10, color: c.dim }}
-          >
-            Enter to send · ⌘+Enter for deep research
+          <span className="font-mono" style={{ fontSize: 10, color: c.dim }}>
+            {deepMode ? "Deep Research mode · Enter to send" : "Enter to send · Toggle deep research for comprehensive reports"}
           </span>
         </div>
       )}
