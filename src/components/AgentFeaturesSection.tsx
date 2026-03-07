@@ -5,7 +5,7 @@ const agents = [
   {
     name: "Researcher",
     icon: Search,
-    model: "GLM-4.6",
+    model: "GLM-4-Plus",
     tagline: "Finds what others miss",
     description:
       "Deploys web search and source synthesis across multiple references. Fetches, parses, and cross-references to build a citation-ready research base before the Analyst starts.",
@@ -38,7 +38,7 @@ const agents = [
   {
     name: "Writer",
     icon: FileText,
-    model: "GLM-4.6",
+    model: "GLM-4-Plus",
     tagline: "Your findings, publication-ready",
     description:
       "Takes raw agent outputs and crafts a structured report: executive summary, numbered findings, inline citations, data tables, and charts. Export to Markdown and share via link.",

@@ -22,7 +22,7 @@ When Z.AI returns 429 (rate limit) or 402 (credits), ARIA automatically uses Lov
 
 ## Live demo
 
-**[Try ARIA →](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID)** (Lovable Cloud — replace with your published URL)
+**[Try ARIA →](https://ariaoracle.lovable.app)** (Live on Lovable Cloud)
 
 ## What ARIA does
 
@@ -66,7 +66,7 @@ Without **both** keys, set at least one; the pipeline will use Z.AI only if `ZAI
 
 ## For judges / reviewers (clone and run)
 
-**Option 1 — Live demo (no clone):** Use the **[live demo link](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID)** from our submission. Sign in and run a research query to see the full pipeline.
+**Option 1 — Live demo (no clone):** Use the **[live demo](https://ariaoracle.lovable.app)** from our submission. Sign in and run a research query to see the full pipeline.
 
 **Option 2 — Clone and run locally (use your own backend):**
 
@@ -100,7 +100,7 @@ Without **both** keys, set at least one; the pipeline will use Z.AI only if `ZAI
 
 ## Deploy
 
-- **Lovable:** Open your [Lovable project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) → **Share → Publish**.  
+- **Lovable:** Open your [Lovable project](https://lovable.dev/projects/ea800b9d-669a-46b5-959e-d1704e333397) → **Share → Publish**.  
 - **GitHub → Lovable:** When you push this repo to GitHub, Lovable syncs automatically. You’ll see all changes (Edge Function, UI, README) in Lovable and in your live app after the next publish.
 - **Custom domain:** Project → Settings → Domains → [Connect Domain](https://docs.lovable.dev/features/custom-domain#custom-domain).
 
