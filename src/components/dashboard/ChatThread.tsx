@@ -172,35 +172,58 @@ export default function ChatThread({
 
             <div
               style={{
-                maxHeight: 200,
+                maxHeight: 240,
                 overflowY: "auto",
-                padding: "8px 0",
+                padding: "6px 0",
               }}
             >
-              {researchEvents.slice(-8).map((event) => {
+              {researchEvents.slice(-10).map((event) => {
                 const Icon = agentIcons[event.agent] || Brain;
                 const color = agentColors[event.agent] || "#888";
+                const isThinking = event.type === "thinking";
                 return (
                   <div
                     key={event.id}
-                    className="flex items-start gap-2"
-                    style={{ padding: "4px 16px" }}
+                    className="flex items-start gap-2.5"
+                    style={{
+                      padding: "6px 16px",
+                      borderLeft: `2px solid ${color}30`,
+                      marginLeft: 16,
+                      opacity: isThinking ? 0.6 : 1,
+                    }}
                   >
                     <Icon
                       size={12}
                       className="flex-shrink-0 mt-0.5"
                       style={{ color }}
                     />
-                    <span
-                      className="font-mono"
-                      style={{ fontSize: 11, color: c.eventText }}
-                    >
-                      <span style={{ color, fontWeight: 500 }}>
-                        {event.agent}
-                      </span>{" "}
-                      {event.content.slice(0, 120)}
-                      {event.content.length > 120 ? "..." : ""}
-                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 mb-0.5">
+                        <span style={{ color, fontWeight: 600, fontSize: 11 }}>
+                          {event.agent}
+                        </span>
+                        <span
+                          className="font-mono rounded"
+                          style={{
+                            fontSize: 9,
+                            padding: "0px 5px",
+                            color: `${color}99`,
+                            background: `${color}12`,
+                            textTransform: "uppercase",
+                            letterSpacing: "0.04em",
+                          }}
+                        >
+                          {event.type}
+                        </span>
+                      </div>
+                      <span
+                        className={isThinking ? "italic" : ""}
+                        style={{ fontSize: 12, lineHeight: 1.5, color: c.eventText }}
+                      >
+                        {event.content.slice(0, 150)}
+                        {event.content.length > 150 ? "…" : ""}
+                      </span>
+                    </div>
                   </div>
                 );
               })}
