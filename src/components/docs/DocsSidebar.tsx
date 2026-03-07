@@ -31,8 +31,11 @@ export default function DocsSidebar({ selectedId, onSelect, mobile }: DocsSideba
         return (
           <div key={cat} className="mb-6">
             <div className="flex items-center gap-2 mb-2">
-              <Icon size={14} className="text-muted-foreground" />
-              <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              <Icon size={14} style={{ color: "hsl(0 0% 40%)" }} />
+              <span
+                className="text-xs font-semibold uppercase tracking-widest"
+                style={{ color: "hsl(0 0% 40%)" }}
+              >
                 {categoryLabels[cat]}
               </span>
             </div>
@@ -41,12 +44,24 @@ export default function DocsSidebar({ selectedId, onSelect, mobile }: DocsSideba
                 <li key={article.id}>
                   <button
                     onClick={() => onSelect(article)}
-                    className={cn(
-                      "w-full text-left text-sm px-3 py-1.5 rounded-md transition-colors truncate",
-                      selectedId === article.id
-                        ? "bg-accent text-accent-foreground font-medium"
-                        : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
-                    )}
+                    className="w-full text-left text-sm px-3 py-1.5 rounded-md transition-colors truncate"
+                    style={{
+                      background: selectedId === article.id ? "hsl(0 0% 12%)" : "transparent",
+                      color: selectedId === article.id ? "hsl(0 0% 90%)" : "hsl(0 0% 50%)",
+                      fontWeight: selectedId === article.id ? 500 : 400,
+                    }}
+                    onMouseEnter={(e) => {
+                      if (selectedId !== article.id) {
+                        e.currentTarget.style.color = "hsl(0 0% 75%)";
+                        e.currentTarget.style.background = "hsl(0 0% 8%)";
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (selectedId !== article.id) {
+                        e.currentTarget.style.color = "hsl(0 0% 50%)";
+                        e.currentTarget.style.background = "transparent";
+                      }
+                    }}
                   >
                     {article.title}
                   </button>
