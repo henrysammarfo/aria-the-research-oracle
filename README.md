@@ -22,7 +22,7 @@ When Z.AI returns 429 (rate limit) or 402 (credits), ARIA automatically uses Lov
 
 ## Live demo
 
-**[Try ARIA →](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID)** (Lovable Cloud — replace with your published URL)
+**[Try ARIA →](https://ariaoracle.lovable.app)** (Live on Lovable Cloud)
 
 ## What ARIA does
 
