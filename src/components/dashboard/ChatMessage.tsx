@@ -275,35 +275,40 @@ export default function ChatMessage({ message, isDark }: ChatMessageProps) {
 
   // Assistant text message
   return (
-    <div className="mb-4 max-w-[90%] sm:max-w-[80%]">
+    <div className="mb-5 max-w-[90%] sm:max-w-[80%]">
       <div
-        className={`prose prose-sm max-w-none ${isDark ? "prose-invert" : ""}`}
-        style={
-          {
-            "--tw-prose-headings": c.assistantText,
-            "--tw-prose-body": c.assistantBody,
-            "--tw-prose-bold": isDark
-              ? "rgba(255,255,255,0.85)"
-              : "rgba(0,0,0,0.9)",
-            "--tw-prose-links": "#3B82F6",
-            "--tw-prose-bullets": c.dim,
-            "--tw-prose-counters": c.dim,
-            "--tw-prose-code": isDark
-              ? "rgba(255,255,255,0.7)"
-              : "rgba(0,0,0,0.8)",
-            "--tw-prose-pre-bg": isDark
-              ? "rgba(255,255,255,0.04)"
-              : "rgba(0,0,0,0.05)",
-            "--tw-prose-pre-code": isDark
-              ? "rgba(255,255,255,0.7)"
-              : "rgba(0,0,0,0.8)",
-            color: c.assistantBody,
-            fontSize: 14,
-            lineHeight: 1.7,
-          } as React.CSSProperties
-        }
+        className="rounded-2xl"
+        style={{
+          padding: "14px 18px",
+          background: isDark ? "rgba(255,255,255,0.02)" : "rgba(255,255,255,0.85)",
+          border: `1px solid ${isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.06)"}`,
+          boxShadow: isDark ? "none" : "0 1px 4px rgba(0,0,0,0.04)",
+        }}
       >
-        <ReactMarkdown>{message.content}</ReactMarkdown>
+        <div
+          className={`prose prose-sm max-w-none ${isDark ? "prose-invert" : ""}`}
+          style={
+            {
+              "--tw-prose-headings": isDark ? "rgba(255,255,255,0.95)" : "#000",
+              "--tw-prose-body": isDark ? "rgba(255,255,255,0.8)" : "#1a1a1a",
+              "--tw-prose-bold": isDark ? "rgba(255,255,255,0.9)" : "#000",
+              "--tw-prose-links": "#3B82F6",
+              "--tw-prose-bullets": isDark ? "rgba(255,255,255,0.3)" : "#333",
+              "--tw-prose-counters": isDark ? "rgba(255,255,255,0.3)" : "#333",
+              "--tw-prose-code": isDark ? "rgba(255,255,255,0.75)" : "#1a1a1a",
+              "--tw-prose-pre-bg": isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)",
+              "--tw-prose-pre-code": isDark ? "rgba(255,255,255,0.75)" : "#1a1a1a",
+              "--tw-prose-hr": isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)",
+              "--tw-prose-quotes": isDark ? "rgba(255,255,255,0.6)" : "#333",
+              "--tw-prose-quote-borders": isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)",
+              color: isDark ? "rgba(255,255,255,0.8)" : "#1a1a1a",
+              fontSize: 14,
+              lineHeight: 1.75,
+            } as React.CSSProperties
+          }
+        >
+          <ReactMarkdown>{message.content}</ReactMarkdown>
+        </div>
       </div>
     </div>
   );
