@@ -13,7 +13,7 @@ const pipeline = [
     phase: "PLAN",
     icon: Cpu,
     label: "Orchestrator decomposes task",
-    detail: "GLM-4.6 → 4 subtasks identified → dependency graph built",
+    detail: "GLM-4-Plus → 5 subtasks identified → dependency graph built",
     accent: "#22D3EE",
   },
   {

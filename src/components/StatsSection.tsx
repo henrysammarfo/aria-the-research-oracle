@@ -8,7 +8,7 @@ const stats = [
   { icon: Layers, value: 5, suffix: "", label: "Specialized Agents", description: "Working in dependency order" },
   { icon: Globe, value: 50, suffix: "+", label: "Sources Analyzed", description: "Per research session" },
   { icon: FileCheck, value: 3, suffix: "min", label: "Avg Report Time", description: "From question to PDF" },
-  { icon: Zap, value: 3, suffix: "", label: "GLM Models", description: "Orchestrated in harmony" },
+  { icon: Zap, value: 2, suffix: "", label: "GLM Models", description: "GLM-4-Plus & GLM-4.7" },
 ];
 
 const CountUp = ({ target, suffix }: { target: number; suffix: string }) => {

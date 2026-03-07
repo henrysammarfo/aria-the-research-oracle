@@ -100,7 +100,7 @@ Without **both** keys, set at least one; the pipeline will use Z.AI only if `ZAI
 
 ## Deploy
 
-- **Lovable:** Open your [Lovable project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) → **Share → Publish**.  
+- **Lovable:** Open your [Lovable project](https://lovable.dev/projects/ea800b9d-669a-46b5-959e-d1704e333397) → **Share → Publish**.  
 - **GitHub → Lovable:** When you push this repo to GitHub, Lovable syncs automatically. You’ll see all changes (Edge Function, UI, README) in Lovable and in your live app after the next publish.
 - **Custom domain:** Project → Settings → Domains → [Connect Domain](https://docs.lovable.dev/features/custom-domain#custom-domain).
 
