@@ -257,7 +257,6 @@ const Navbar = () => {
     } else if (item.section) {
       if (location.pathname !== "/") {
         navigate("/");
-        // Wait for page to render then scroll
         setTimeout(() => scrollToSection(item.section!), 100);
       } else {
         scrollToSection(item.section);
@@ -268,37 +267,32 @@ const Navbar = () => {
   return (
     <>
       <nav
-        className="relative z-30 flex items-center justify-between w-full"
-        style={{ padding: "20px 120px" }}
+        className="relative z-30 flex items-center justify-between w-full px-4 sm:px-6 md:px-10 lg:px-20 xl:px-[120px]"
+        style={{ paddingTop: 20, paddingBottom: 20 }}
       >
-        <style>{`
-          @media (max-width: 768px) {
-            nav { padding: 20px 24px !important; }
-          }
-        `}</style>
-
         <a
           href="/"
           onClick={(e) => { e.preventDefault(); navigate("/"); }}
-          className="text-white font-bold tracking-[0.2em] text-xl uppercase"
+          className="text-white font-bold tracking-[0.2em] text-lg sm:text-xl uppercase"
           style={{ height: 25, display: "flex", alignItems: "center" }}
         >
           ARIA
         </a>
 
-        <div className="hidden md:flex items-center" style={{ gap: 30 }}>
+        {/* Desktop nav — hidden below lg */}
+        <div className="hidden lg:flex items-center" style={{ gap: 30 }}>
           {navData.map((nav) => (
             <NavDropdown key={nav.label} label={nav.label} items={nav.items} onNavigate={handleNavigate} />
           ))}
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="hidden md:block">
+          <div className="hidden lg:block">
             <GlowPillButton variant="dark" href="/auth">Get Early Access</GlowPillButton>
           </div>
 
           <button
-            className="md:hidden flex items-center justify-center text-white"
+            className="lg:hidden flex items-center justify-center text-white"
             style={{ width: 40, height: 40 }}
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle menu"
@@ -311,7 +305,7 @@ const Navbar = () => {
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
-            className="fixed inset-0 z-20 flex flex-col md:hidden"
+            className="fixed inset-0 z-20 flex flex-col lg:hidden"
             style={{
               background: "rgba(0,0,0,0.97)",
               backdropFilter: "blur(20px)",
