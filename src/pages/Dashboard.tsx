@@ -137,17 +137,17 @@ const Dashboard = () => {
   const showExamples = messages.length === 0 && !isLoading;
 
   const c = {
-    topBorder: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.15)",
-    dimText: isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.65)",
-    brandText: isDark ? "#fff" : "#0a0a0a",
-    pathText: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.5)",
-    btnColor: isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.7)",
-    btnBg: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.06)",
-    btnBorder: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.15)",
-    avatarBg: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)",
-    avatarText: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.7)",
-    nameText: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.75)",
-    panelBorder: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.15)",
+    topBorder: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.12)",
+    dimText: isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.8)",
+    brandText: isDark ? "#fff" : "#000",
+    pathText: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.6)",
+    btnColor: isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.85)",
+    btnBg: isDark ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.8)",
+    btnBorder: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.12)",
+    avatarBg: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)",
+    avatarText: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.85)",
+    nameText: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.9)",
+    panelBorder: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.1)",
   };
 
   return (
