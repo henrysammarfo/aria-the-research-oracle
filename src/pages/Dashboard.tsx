@@ -427,7 +427,7 @@ const Dashboard = () => {
               }}
             >
               <div className="flex-shrink-0" style={{ padding: showStream ? "20px 20px 16px" : "80px 24px 24px" }}>
-                <TaskInput onSubmit={handleSubmit} isLoading={isRunning} isDark={isDark} />
+                <TaskInput onSubmit={handleSubmit} isLoading={isRunning} isDark={isDark} showExamples={!showStream} />
               </div>
 
               {showStream && (
