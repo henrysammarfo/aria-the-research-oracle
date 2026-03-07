@@ -2,3 +2,9 @@ project_id = "cgzryavrxphlrfivykdb"
 
 [functions.aria-research]
 verify_jwt = false
+
+[functions.aria-chat]
+verify_jwt = false
+
+[functions.delete-account]
+verify_jwt = false
