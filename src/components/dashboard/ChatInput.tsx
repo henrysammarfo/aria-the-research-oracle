@@ -155,7 +155,7 @@ export default function ChatInput({
           border: `1px solid ${deepMode ? c.toggleOnBorder : c.border}`,
           boxShadow: isDark
             ? "0 2px 12px rgba(0,0,0,0.3)"
-            : "0 2px 12px rgba(0,0,0,0.08)",
+            : "0 1px 8px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.03)",
           transition: "border-color 0.2s",
         }}
       >
