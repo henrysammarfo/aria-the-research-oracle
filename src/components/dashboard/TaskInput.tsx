@@ -1,6 +1,6 @@
-import { useState, useRef } from "react";
+import { useState, useRef, forwardRef } from "react";
 import { motion } from "framer-motion";
-import { Send, Sparkles, Paperclip, X, FileText, Image as ImageIcon } from "lucide-react";
+import { Send, Sparkles, Paperclip, X, FileText } from "lucide-react";
 
 const exampleQueries = [
   "Analyze the economic impact of AI on software engineering jobs",
@@ -18,9 +18,10 @@ interface TaskInputProps {
   onSubmit: (query: string, files?: UploadedFile[]) => void;
   isLoading: boolean;
   isDark?: boolean;
+  showExamples?: boolean;
 }
 
-const TaskInput = ({ onSubmit, isLoading, isDark = true }: TaskInputProps) => {
+const TaskInput = forwardRef<HTMLDivElement, TaskInputProps>(({ onSubmit, isLoading, isDark = true, showExamples = true }, ref) => {
   const [value, setValue] = useState("");
   const [files, setFiles] = useState<UploadedFile[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -62,23 +63,23 @@ const TaskInput = ({ onSubmit, isLoading, isDark = true }: TaskInputProps) => {
   };
 
   const c = {
-    text: isDark ? "#fff" : "#1a1a1a",
-    placeholder: isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.4)",
-    surface: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.04)",
-    border: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.12)",
-    dim: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.35)",
-    chipText: isDark ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.55)",
-    chipBg: isDark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.04)",
-    chipBorder: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.1)",
-    btnBg: (value.trim() || files.length > 0) ? (isDark ? "#fff" : "#1a1a1a") : (isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"),
-    btnText: (value.trim() || files.length > 0) ? (isDark ? "#000" : "#fff") : (isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)"),
-    fileBg: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.06)",
-    fileBorder: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)",
-    fileText: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)",
+    text: isDark ? "#fff" : "#111",
+    placeholder: isDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.45)",
+    surface: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.05)",
+    border: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.15)",
+    dim: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.45)",
+    chipText: isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.7)",
+    chipBg: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.05)",
+    chipBorder: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.15)",
+    btnBg: (value.trim() || files.length > 0) ? (isDark ? "#fff" : "#111") : (isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.12)"),
+    btnText: (value.trim() || files.length > 0) ? (isDark ? "#000" : "#fff") : (isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.45)"),
+    fileBg: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.07)",
+    fileBorder: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.12)",
+    fileText: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.65)",
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <div ref={ref} className="flex flex-col gap-4">
       <div className="relative rounded-xl overflow-hidden" style={{ background: c.surface, border: `1px solid ${c.border}` }}>
         <textarea
           ref={textareaRef}
@@ -92,7 +93,6 @@ const TaskInput = ({ onSubmit, isLoading, isDark = true }: TaskInputProps) => {
           disabled={isLoading}
         />
 
-        {/* File previews */}
         {files.length > 0 && (
           <div className="flex flex-wrap gap-2" style={{ padding: "0 16px 8px" }}>
             {files.map((f, i) => (
@@ -112,7 +112,7 @@ const TaskInput = ({ onSubmit, isLoading, isDark = true }: TaskInputProps) => {
                 <button
                   onClick={() => removeFile(i)}
                   className="rounded-full flex items-center justify-center transition-opacity"
-                  style={{ width: 16, height: 16, background: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)", color: c.fileText }}
+                  style={{ width: 16, height: 16, background: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.12)", color: c.fileText }}
                 >
                   <X size={10} />
                 </button>
@@ -154,28 +154,32 @@ const TaskInput = ({ onSubmit, isLoading, isDark = true }: TaskInputProps) => {
         </div>
       </div>
 
-      <div className="flex flex-col gap-2">
-        <span className="flex items-center gap-1.5 font-mono" style={{ fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: c.dim }}>
-          <Sparkles size={10} /> example queries
-        </span>
-        <div className="flex flex-wrap gap-2">
-          {exampleQueries.map((q) => (
-            <motion.button
-              key={q}
-              onClick={() => { setValue(q); textareaRef.current?.focus(); }}
-              className="rounded-lg text-left transition-colors duration-150"
-              style={{ padding: "8px 14px", fontSize: 12, color: c.chipText, background: c.chipBg, border: `1px solid ${c.chipBorder}`, lineHeight: 1.4 }}
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.99 }}
-              disabled={isLoading}
-            >
-              {q}
-            </motion.button>
-          ))}
+      {showExamples && (
+        <div className="flex flex-col gap-2">
+          <span className="flex items-center gap-1.5 font-mono" style={{ fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: c.dim }}>
+            <Sparkles size={10} /> example queries
+          </span>
+          <div className="flex flex-wrap gap-2">
+            {exampleQueries.map((q) => (
+              <motion.button
+                key={q}
+                onClick={() => { setValue(q); textareaRef.current?.focus(); }}
+                className="rounded-lg text-left transition-colors duration-150"
+                style={{ padding: "8px 14px", fontSize: 12, color: c.chipText, background: c.chipBg, border: `1px solid ${c.chipBorder}`, lineHeight: 1.4 }}
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+                disabled={isLoading}
+              >
+                {q}
+              </motion.button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
-};
+});
+
+TaskInput.displayName = "TaskInput";
 
 export default TaskInput;
