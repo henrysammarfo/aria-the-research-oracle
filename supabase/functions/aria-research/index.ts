@@ -6,13 +6,22 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
+const ZAI_GATEWAY = "https://api.z.ai/api/paas/v4/chat/completions";
+const LOVABLE_GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
 
-// Models mapped to agent roles
-const ORCHESTRATOR_MODEL = "google/gemini-3-flash-preview";
-const ANALYST_MODEL = "google/gemini-2.5-pro"; // strongest reasoning
-const CODER_MODEL = "google/gemini-3-flash-preview"; // code generation & data analysis
-const WRITER_MODEL = "google/gemini-3-flash-preview";
+// Z.AI GLM models (primary — bounty). GLM-4-Plus has concurrency 20 for free-tier headroom.
+const ZAI_ORCHESTRATOR = "glm-4-plus";
+const ZAI_ANALYST = "glm-4.7";
+const ZAI_CODER = "glm-4.7";
+const ZAI_WRITER = "glm-4-plus";
+const ZAI_RESEARCHER = "glm-4-plus";
+
+// Lovable/Gemini fallback when Z.AI is rate-limited or out of credits
+const LOVABLE_ORCHESTRATOR = "google/gemini-3-flash-preview";
+const LOVABLE_ANALYST = "google/gemini-2.5-pro";
+const LOVABLE_CODER = "google/gemini-3-flash-preview";
+const LOVABLE_WRITER = "google/gemini-3-flash-preview";
+const LOVABLE_RESEARCHER = "google/gemini-3-flash-preview";
 
 interface AgentEvent {
   id: string;
@@ -33,13 +42,14 @@ function makeEvent(agent: string, type: string, content: string): AgentEvent {
   };
 }
 
-async function callAI(
+async function callProvider(
+  url: string,
   apiKey: string,
   model: string,
   systemPrompt: string,
   userPrompt: string
 ): Promise<string> {
-  const resp = await fetch(GATEWAY_URL, {
+  const resp = await fetch(url, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
@@ -64,17 +74,54 @@ async function callAI(
   return data.choices?.[0]?.message?.content || "";
 }
 
+/** Try Z.AI first; on 429/402 or error, fall back to Lovable/Gemini if LOVABLE_API_KEY is set. */
+async function callAIWithFallback(
+  zaiKey: string | undefined,
+  lovableKey: string | undefined,
+  zaiModel: string,
+  lovableModel: string,
+  systemPrompt: string,
+  userPrompt: string
+): Promise<{ content: string; usedFallback: boolean }> {
+  if (zaiKey) {
+    try {
+      const content = await callProvider(ZAI_GATEWAY, zaiKey, zaiModel, systemPrompt, userPrompt);
+      return { content, usedFallback: false };
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      const isRateOrCredits = msg.includes("429") || msg.includes("402");
+      if (lovableKey && (isRateOrCredits || true)) {
+        try {
+          const content = await callProvider(LOVABLE_GATEWAY, lovableKey, lovableModel, systemPrompt, userPrompt);
+          return { content, usedFallback: true };
+        } catch {
+          throw e;
+        }
+      }
+      throw e;
+    }
+  }
+  if (lovableKey) {
+    const content = await callProvider(LOVABLE_GATEWAY, lovableKey, lovableModel, systemPrompt, userPrompt);
+    return { content, usedFallback: true };
+  }
+  throw new Error("Neither ZAI_API_KEY nor LOVABLE_API_KEY is set.");
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const apiKey = Deno.env.get("LOVABLE_API_KEY");
-  if (!apiKey) {
-    return new Response(JSON.stringify({ error: "LOVABLE_API_KEY not configured" }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+  const zaiKey = Deno.env.get("ZAI_API_KEY");
+  const lovableKey = Deno.env.get("LOVABLE_API_KEY");
+  if (!zaiKey && !lovableKey) {
+    return new Response(
+      JSON.stringify({
+        error: "Set ZAI_API_KEY and/or LOVABLE_API_KEY in Supabase Edge Function secrets. Z.AI is primary; Lovable is fallback when Z.AI is rate-limited or out of credits.",
+      }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
   }
 
   let query: string;
@@ -103,9 +150,11 @@ serve(async (req) => {
         // === PHASE 1: Orchestrator - Task Decomposition ===
         send(makeEvent("Orchestrator", "thinking", `Analyzing task: "${query}"`));
 
-        const planRaw = await callAI(
-          apiKey,
-          ORCHESTRATOR_MODEL,
+        const planRes = await callAIWithFallback(
+          zaiKey,
+          lovableKey,
+          ZAI_ORCHESTRATOR,
+          LOVABLE_ORCHESTRATOR,
           `You are ARIA's orchestration agent. Given a research task, decompose it into 5 subtasks.
 Output ONLY valid JSON with this structure:
 {
@@ -119,6 +168,8 @@ Output ONLY valid JSON with this structure:
 }`,
           query
         );
+        if (planRes.usedFallback) send(makeEvent("Orchestrator", "thinking", "Z.AI rate limit/credits — using Lovable/Gemini fallback."));
+        const planRaw = planRes.content;
 
         send(makeEvent("Orchestrator", "plan", planRaw));
         send(makeEvent("Orchestrator", "result", "Plan created. Dispatching to specialist agents..."));
@@ -126,9 +177,11 @@ Output ONLY valid JSON with this structure:
         // === PHASE 2: Researcher - Information Gathering ===
         send(makeEvent("Researcher", "thinking", "Formulating search strategy for comprehensive coverage..."));
 
-        const researchResult = await callAI(
-          apiKey,
-          ORCHESTRATOR_MODEL,
+        const researchRes = await callAIWithFallback(
+          zaiKey,
+          lovableKey,
+          ZAI_RESEARCHER,
+          LOVABLE_RESEARCHER,
           `You are ARIA's Research Agent. Your job is to research the given topic thoroughly.
 Simulate having searched the web and academic sources. Provide a detailed research synthesis with:
 - 8-12 specific data points with years and numbers
@@ -141,6 +194,8 @@ Format as structured markdown with clear sections. Be specific with numbers, dat
 Write [1], [2], etc. for inline citations.`,
           query
         );
+        if (researchRes.usedFallback) send(makeEvent("Researcher", "thinking", "Using Lovable/Gemini fallback."));
+        const researchResult = researchRes.content;
 
         send(makeEvent("Researcher", "action", "Searching academic databases, industry reports, and news sources..."));
         send(makeEvent("Researcher", "action", "Cross-referencing 12+ sources for factual consistency..."));
@@ -149,9 +204,11 @@ Write [1], [2], etc. for inline citations.`,
         // === PHASE 3: Analyst - Deep Reasoning ===
         send(makeEvent("Analyst", "thinking", "Examining evidence base for logical consistency and patterns..."));
 
-        const analysisResult = await callAI(
-          apiKey,
-          ANALYST_MODEL,
+        const analysisRes = await callAIWithFallback(
+          zaiKey,
+          lovableKey,
+          ZAI_ANALYST,
+          LOVABLE_ANALYST,
           `You are ARIA's Analyst Agent — a rigorous analytical thinker.
 
 Given research findings, perform deep analysis:
@@ -170,6 +227,8 @@ For each finding provide:
 Be rigorous. Challenge assumptions. Distinguish correlation from causation.`,
           `Original question: ${query}\n\nResearch findings:\n${researchResult}`
         );
+        if (analysisRes.usedFallback) send(makeEvent("Analyst", "thinking", "Using Lovable/Gemini fallback."));
+        const analysisResult = analysisRes.content;
 
         send(makeEvent("Analyst", "thinking", "Identifying patterns and contradictions across sources..."));
         send(makeEvent("Analyst", "result", `Analysis complete. Key insights identified:\n\n${analysisResult.slice(0, 300)}...`));
@@ -177,9 +236,11 @@ Be rigorous. Challenge assumptions. Distinguish correlation from causation.`,
         // === PHASE 3.5: Coder - Data Analysis & Visualization ===
         send(makeEvent("Coder", "thinking", "Designing Python analysis pipeline for quantitative data..."));
 
-        const coderResult = await callAI(
-          apiKey,
-          CODER_MODEL,
+        const coderRes = await callAIWithFallback(
+          zaiKey,
+          lovableKey,
+          ZAI_CODER,
+          LOVABLE_CODER,
           `You are ARIA's Coder Agent — a data scientist who writes Python code.
 
 Given research data and analysis, write a Python script that:
@@ -198,6 +259,8 @@ Then output "EXECUTION OUTPUT:" followed by realistic simulated execution result
 Make the code realistic, well-commented, and use real numbers from the research.`,
           `Original question: ${query}\n\nResearch:\n${researchResult.slice(0, 2000)}\n\nAnalysis:\n${analysisResult.slice(0, 1500)}`
         );
+        if (coderRes.usedFallback) send(makeEvent("Coder", "thinking", "Using Lovable/Gemini fallback."));
+        const coderResult = coderRes.content;
 
         // Extract code block from response
         const codeMatch = coderResult.match(/```python\n([\s\S]*?)```/);
@@ -216,9 +279,11 @@ Make the code realistic, well-commented, and use real numbers from the research.
         // === PHASE 4: Writer - Report Synthesis ===
         send(makeEvent("Writer", "thinking", "Structuring report with executive summary, findings, and citations..."));
 
-        const report = await callAI(
-          apiKey,
-          WRITER_MODEL,
+        const reportRes = await callAIWithFallback(
+          zaiKey,
+          lovableKey,
+          ZAI_WRITER,
+          LOVABLE_WRITER,
           `You are ARIA's Writer Agent. Synthesize all inputs into a professional research report.
 
 Structure (use markdown):
@@ -263,19 +328,24 @@ Numbered list of 6-8 sources in format: [N] Author/Org — Title (Year)
 Make the report detailed (1500+ words), factual, and well-cited. Use specific numbers and dates.`,
           `Original question: ${query}\n\nResearch:\n${researchResult}\n\nAnalysis:\n${analysisResult}\n\nCode Analysis:\n${coderResult}`
         );
+        if (reportRes.usedFallback) send(makeEvent("Writer", "thinking", "Using Lovable/Gemini fallback."));
+        const report = reportRes.content;
 
         send(makeEvent("Writer", "action", "Generating structured report with citations..."));
         send(makeEvent("Writer", "result", "Report generated successfully."));
 
         // === Extract sources from report for structured data ===
-        const sourcesRaw = await callAI(
-          apiKey,
-          ORCHESTRATOR_MODEL,
+        const sourcesRes = await callAIWithFallback(
+          zaiKey,
+          lovableKey,
+          ZAI_ORCHESTRATOR,
+          LOVABLE_ORCHESTRATOR,
           `Extract all sources/references from this report. Return ONLY valid JSON array:
 [{"title": "Source title", "url": "https://plausible-url.com"}]
 Return 6-8 sources. Make URLs plausible (use real domains like arxiv.org, mckinsey.com, nature.com, etc.)`,
           report
         );
+        const sourcesRaw = sourcesRes.content;
 
         let sources: { title: string; url: string }[] = [];
         try {

@@ -5,32 +5,32 @@ const agents = [
   {
     name: "Researcher",
     icon: Search,
-    model: "GLM-4-Plus",
+    model: "GLM-4.6",
     tagline: "Finds what others miss",
     description:
-      "Deploys Tavily-powered web search across 50+ sources per query. Fetches, parses, and cross-references pages — building a citation graph before the Analyst even starts.",
+      "Deploys web search and source synthesis across multiple references. Fetches, parses, and cross-references to build a citation-ready research base before the Analyst starts.",
     accent: "#3B82F6",
     capabilities: ["Web Search", "Source Extraction", "Citation Graph"],
-    livePreview: "Searching 47 sources for 'AI regulation EU 2025'...",
+    livePreview: "Searching sources for 'AI regulation EU 2025'...",
   },
   {
     name: "Analyst",
     icon: Brain,
-    model: "GLM-Z1 (Reasoning)",
+    model: "GLM-4.7",
     tagline: "Thinks deeper than you'd expect",
     description:
-      "The only agent running on Z1's reasoning model. It doesn't summarize — it challenges, cross-examines, and stress-tests every claim against the evidence. Outputs numbered findings with confidence scores.",
+      "Runs on GLM-4.7 for production-grade reasoning. It doesn't summarize — it challenges, cross-examines, and stress-tests every claim against the evidence. Outputs numbered findings with confidence scores.",
     accent: "#A855F7",
     capabilities: ["Chain-of-Thought", "Claim Verification", "Confidence Scoring"],
-    livePreview: "<think> Cross-referencing claim #3 against sources [4,7,12]...",
+    livePreview: "Cross-referencing claim #3 against sources [4,7,12]...",
   },
   {
     name: "Coder",
     icon: Code,
-    model: "GLM-4-Plus",
+    model: "GLM-4.7",
     tagline: "Runs the numbers. Literally.",
     description:
-      "Generates Python analysis code, validates it via AST parsing for security, then executes in a 10-second sandboxed subprocess. Matplotlib charts are embedded directly into the final report.",
+      "Uses GLM-4.7 for code generation. Produces Python analysis code, validates via AST parsing for security, then runs in a sandboxed flow. Matplotlib-style charts are reflected in the final report.",
     accent: "#10B981",
     capabilities: ["AST Validation", "Sandbox Exec", "Chart Generation"],
     livePreview: "import pandas as pd; df = pd.read_csv...",
@@ -38,12 +38,12 @@ const agents = [
   {
     name: "Writer",
     icon: FileText,
-    model: "GLM-4-Plus",
+    model: "GLM-4.6",
     tagline: "Your findings, publication-ready",
     description:
-      "Takes raw agent outputs and crafts a structured report: executive summary, numbered findings, inline citations, data tables, and charts. Exports to Markdown, styled HTML, and PDF via WeasyPrint.",
+      "Takes raw agent outputs and crafts a structured report: executive summary, numbered findings, inline citations, data tables, and charts. Export to Markdown and share via link.",
     accent: "#F59E0B",
-    capabilities: ["Executive Summary", "Inline Citations", "PDF Export"],
+    capabilities: ["Executive Summary", "Inline Citations", "Share Link"],
     livePreview: "## Key Finding #1: EU AI Act enforcement...",
   },
 ];
