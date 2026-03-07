@@ -61,9 +61,9 @@ export default function ChatThread({
     <div
       ref={scrollRef}
       className="flex-1 overflow-y-auto"
-      style={{ padding: "24px 16px", scrollBehavior: "smooth" }}
+      style={{ padding: "16px 8px", scrollBehavior: "smooth" }}
     >
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-3xl mx-auto px-1 sm:px-4">
         {messages.length === 0 && !isResearching && (
           <div className="flex flex-col items-center justify-center py-20">
             <div

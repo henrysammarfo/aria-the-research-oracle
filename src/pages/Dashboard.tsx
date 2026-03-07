@@ -331,12 +331,10 @@ const Dashboard = () => {
 
           {/* Input area */}
           <div
-            className="flex-shrink-0"
+            className="flex-shrink-0 w-full mx-auto"
             style={{
-              padding: isMobile ? "8px 12px 12px" : "8px 24px 16px",
+              padding: isMobile ? "6px 8px 10px" : "8px 24px 16px",
               maxWidth: 800,
-              width: "100%",
-              margin: "0 auto",
             }}
           >
             <ChatInput
