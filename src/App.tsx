@@ -12,7 +12,6 @@ import ResetPassword from "./pages/ResetPassword";
 import SharedReport from "./pages/SharedReport";
 import Docs from "./pages/Docs";
 import NotFound from "./pages/NotFound";
-import Pitch from "./pages/Pitch";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
