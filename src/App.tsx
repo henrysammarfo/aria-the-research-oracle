@@ -31,7 +31,7 @@ const App = () => (
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path="/report/:shareId" element={<SharedReport />} />
             <Route path="/docs" element={<Docs />} />
-            <Route path="/pitch" element={<Pitch />} />
+            
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
