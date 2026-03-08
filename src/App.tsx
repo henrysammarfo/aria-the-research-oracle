@@ -12,6 +12,7 @@ import ResetPassword from "./pages/ResetPassword";
 import SharedReport from "./pages/SharedReport";
 import Docs from "./pages/Docs";
 import NotFound from "./pages/NotFound";
+import Pitch from "./pages/Pitch";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -31,6 +32,7 @@ const App = () => (
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path="/report/:shareId" element={<SharedReport />} />
             <Route path="/docs" element={<Docs />} />
+            <Route path="/pitch" element={<Pitch />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
