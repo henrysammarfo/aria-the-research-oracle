@@ -1,3 +1,12 @@
+# Edge Function `aria-research` — full code for Lovable
+
+Use this when Lovable’s deployed `aria-research` is out of date. **Replace the entire `aria-research` function code in Lovable with the block below**, then deploy. Secrets `ZAI_API_KEY` and `OPENAI_API_KEY` should already be set in Lovable; this code uses them with **Z.AI primary → OpenAI fallback** on 429/402.
+
+---
+
+## File: `index.ts` (replace entire file in Lovable for `aria-research`)
+
+```ts
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
@@ -440,3 +449,21 @@ Return 6-8 sources. Make URLs plausible (use real domains like arxiv.org, mckins
     },
   });
 });
+```
+
+---
+
+## What this does
+
+- **Primary:** Z.AI (GLM-4-Plus / GLM-4.7). Requires `ZAI_API_KEY`.
+- **Fallback 1 (optional):** Lovable/Gemini. Requires `LOVABLE_API_KEY`.
+- **Fallback 2:** OpenAI `gpt-4o-mini`. Requires `OPENAI_API_KEY`.
+
+When Z.AI returns **429** (rate limit) or **402** (credits), the function tries Lovable (if key set), then **OpenAI**. So with `ZAI_API_KEY` + `OPENAI_API_KEY` set, “AI credits exhausted” should only appear if both Z.AI and OpenAI fail.
+
+## Steps in Lovable
+
+1. Open the **aria-research** Edge Function.
+2. **Replace the entire** `index.ts` (or single file) content with the code above (from `import { serve }` through the last `});`).
+3. **Deploy** the function.
+4. No need to change secrets if `ZAI_API_KEY` and `OPENAI_API_KEY` are already set.
