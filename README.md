@@ -4,7 +4,20 @@
 
 ARIA turns a research question into a structured report via a multi-agent pipeline: orchestration → research synthesis → analysis → code/data viz → report writing.
 
-**Backend:** Supabase (auth, DB, Edge Functions) is managed by **Lovable Cloud** — Lovable *is* our Supabase. There is no separate Supabase dashboard login; Lovable manages the project and Edge Function secrets. The frontend (Vercel or local) **calls** this backend using the Supabase URL and anon key. The GitHub repo is **disconnected** from Lovable, so any edits in the repo must be communicated to Lovable (e.g. via `docs/LOVABLE_SYNC_PROMPT.md`) so the backend stays in sync.
+---
+
+## Links
+
+| | |
+|---|---|
+| **Live app** | [aria-the-research-oracle.vercel.app](https://aria-the-research-oracle.vercel.app) |
+| **Vision deck** | [aria-vision-deck.lovable.app](https://aria-vision-deck.lovable.app) |
+| **Demo video** | [YouTube](https://www.youtube.com/watch?v=z67o-Y6rJzI) |
+| **Repo** | [github.com/henrysammarfo/aria-the-research-oracle](https://github.com/henrysammarfo/aria-the-research-oracle) |
+
+---
+
+**Backend:** Supabase (auth, DB, Edge Functions) is managed by **Lovable Cloud** — Lovable *is* our Supabase. The frontend (Vercel or local) **calls** this backend using the Supabase URL and anon key. The GitHub repo is **disconnected** from Lovable; edits in the repo must be communicated to Lovable (e.g. via `docs/LOVABLE_SYNC_PROMPT.md`) so the backend stays in sync.
 
 ---
 
@@ -18,32 +31,31 @@ npm install
 npm run dev
 ```
 
-Open the URL shown (e.g. http://localhost:5173). Go to Dashboard and run a research query. For local test, fill `.env` with your Supabase URL and anon key (from Lovable Cloud for this project, or your own). Z.AI and OpenAI keys live in **Lovable** (Edge Function secrets), not in `.env` — the frontend only needs the Supabase keys to call the backend.
+Open the URL shown (e.g. http://localhost:5173). Go to Dashboard and run a research query. **Use your own Supabase project and your own keys** — we do not share or expose our backend credentials. See [For judges](#for-judges--reviewers) below.
 
-**Local verification before PR / Vercel**
+**Local verification (when using your own backend)**
 
-1. `.env` has `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID` (from Lovable for this project).
-2. In Lovable, set Edge Function secrets: `ZAI_API_KEY`, `OPENAI_API_KEY`.
+1. `.env` has `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID` from **your** Supabase project.
+2. Your Supabase Edge Function secrets: `ZAI_API_KEY`, `OPENAI_API_KEY` (your own keys).
 3. `npm run build` — must succeed (Vercel runs this).
-4. `npm run test:e2e-pipeline` — calls the backend; takes ~2–3 min. Optional: `npm run verify` runs build then e2e.
+4. `npm run test:e2e-pipeline` — optional; calls your backend (~2–3 min). Or `npm run verify` (build + e2e).
 
 ---
 
 ## For judges / reviewers
 
-**Option A — Live demo**  
-Use the **Vercel deployment URL** from our submission. Sign in and run a query to test the full pipeline.
+**Option A — Live demo (recommended)**  
+Use the links above: **[Live app](https://aria-the-research-oracle.vercel.app)** · **[Demo video](https://www.youtube.com/watch?v=z67o-Y6rJzI)** · **[Vision deck](https://aria-vision-deck.lovable.app)**. No clone or keys required.
 
 **Option B — Clone and test locally**  
-Follow [Quick start](#quick-start-clone-and-run-locally) above. Copy `.env.example` to `.env` and add the Supabase URL and anon key (from Lovable for this project, or your own backend).
+If you want to run the app yourself, you **must use your own Supabase project and your own API keys**. We do not share or expose our backend credentials.
 
-**Optional — E2E pipeline test**
+1. Clone the repo, `cp .env.example .env`, `npm install`, `npm run dev`.
+2. Create **your own** Supabase project at [supabase.com](https://supabase.com). Deploy the Edge Function `supabase/functions/aria-research` to your project.
+3. In **your** Supabase → Edge Functions → Secrets, set **your** `ZAI_API_KEY` and `OPENAI_API_KEY` (from [Z.AI](https://chat.z.ai/) and [OpenAI](https://platform.openai.com/api-keys)).
+4. In `.env`, set `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` from **your** project. Then the app will call your backend.
 
-```bash
-npm run test:e2e-pipeline
-```
-
-Runs one full pipeline and checks that a report is returned (~2–3 min). Uses `.env` for the Supabase endpoint.
+No API keys or credentials from the authors are included in the repo or shared.
 
 ---
 
@@ -60,9 +72,11 @@ Z.AI and OpenAI keys live only in **Lovable Cloud** (Edge Function secrets). The
 
 ---
 
-## Backend (Lovable Cloud)
+## Backend (Lovable Cloud — our deployment)
 
-The pipeline runs in **Supabase Edge Functions** managed by **Lovable Cloud**. Z.AI and OpenAI keys are set as **secrets in Lovable** (Edge Function secrets), not in `.env` or the repo. If you deploy your own copy of the Edge Function (e.g. your own Supabase project), you would set there:
+The pipeline runs in **Supabase Edge Functions** managed by **Lovable Cloud**. Z.AI and OpenAI keys are set as **secrets in Lovable** (Edge Function secrets), not in `.env` or the repo.
+
+**If you run your own deployment** (e.g. your own Supabase project), set in **your** Edge Function secrets:
 
 - **ZAI_API_KEY** — [Z.AI Open Platform](https://chat.z.ai/) (full API key)
 - **OPENAI_API_KEY** — [OpenAI API keys](https://platform.openai.com/api-keys) (fallback when Z.AI is rate-limited)

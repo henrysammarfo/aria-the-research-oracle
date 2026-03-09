@@ -25,7 +25,16 @@ Use the prompt below in Lovable to bring its project in line with the repo. Repe
 - Frontend (Vercel or local) only needs: `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID`. It uses these to call your Supabase (Lovable). No API keys in the frontend.
 - Local: copy `.env.example` to `.env` and set those three (from Lovable for this project). Vercel: set the same three in Environment Variables. Then Vercel/local can fetch and auth against this backend.
 
-**3. Repo changes → tell Lovable**
+**3. Deploy this Edge Function code (fixes credits fallback)**
+
+- The repo has the full, up-to-date `aria-research` Edge Function with **Z.AI primary → OpenAI fallback** on 429/402. Lovable’s deployed version may be older and not do the fallback.
+- **Action:** Open `docs/LOVABLE_EDGE_FUNCTION_ARIA_RESEARCH.md` in the repo, copy the entire `index.ts` code block, and in Lovable replace the **entire** `aria-research` function code with it, then deploy. No need to change secrets if `ZAI_API_KEY` and `OPENAI_API_KEY` are already set.
+
+**4. Auth redirect (Vercel app)**
+
+- **Site URL:** In Auth → URL Configuration, set **Site URL** to `https://aria-the-research-oracle.vercel.app` so email verification and password-reset links go to the Vercel app, not lovable.app. Add that URL to **Redirect URLs** as well. See `docs/AUTH_AND_CREDITS_FIX.md` for full steps.
+
+**5. Repo changes → tell Lovable**
 
 - When we change the Edge Function or backend contract in the repo, we will paste updated instructions or code here so you can update the Lovable project. Keep the project in sync with the repo manually.
 
