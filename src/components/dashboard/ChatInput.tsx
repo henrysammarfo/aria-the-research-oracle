@@ -27,13 +27,14 @@ export default function ChatInput({
   const [value, setValue] = useState("");
   const [files, setFiles] = useState<UploadedFile[]>([]);
   const [deepMode, setDeepMode] = useState(false);
+  const [isCoolingDown, setIsCoolingDown] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const hasContent = value.trim() || files.length > 0;
 
   const handleSubmit = () => {
-    if (!hasContent || isLoading) return;
+    if (!hasContent || isLoading || isCoolingDown) return;
     const trimmed = value.trim();
     const f = files.length > 0 ? files : undefined;
     if (deepMode) {
@@ -43,6 +44,8 @@ export default function ChatInput({
     }
     setValue("");
     setFiles([]);
+    setIsCoolingDown(true);
+    setTimeout(() => setIsCoolingDown(false), 5000);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -259,7 +262,7 @@ export default function ChatInput({
 
           <button
             onClick={handleSubmit}
-            disabled={!hasContent || isLoading}
+            disabled={!hasContent || isLoading || isCoolingDown}
             className="flex items-center gap-1.5 rounded-xl font-medium transition-all duration-200 disabled:opacity-30"
             style={{
               padding: "7px 14px",
