@@ -7,29 +7,47 @@ const corsHeaders = {
 };
 
 const ZAI_GATEWAY = "https://api.z.ai/api/paas/v4/chat/completions";
-const LOVABLE_GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
 const OPENAI_GATEWAY = "https://api.openai.com/v1/chat/completions";
 
-// Z.AI GLM models (primary — bounty). GLM-4-Plus has concurrency 20 for free-tier headroom.
+// Z.AI GLM models (primary). OpenAI gpt-4o-mini is fallback only when Z.AI returns 429/402.
 const ZAI_ORCHESTRATOR = "glm-4-plus";
 const ZAI_ANALYST = "glm-4.7";
 const ZAI_CODER = "glm-4.7";
 const ZAI_WRITER = "glm-4-plus";
 const ZAI_RESEARCHER = "glm-4-plus";
+const OPENAI_MODEL = "gpt-4o-mini";
 
-// Lovable/Gemini fallback when Z.AI is rate-limited or out of credits
-const LOVABLE_ORCHESTRATOR = "google/gemini-3-flash-preview";
-const LOVABLE_ANALYST = "google/gemini-2.5-pro";
-const LOVABLE_CODER = "google/gemini-3-flash-preview";
-const LOVABLE_WRITER = "google/gemini-3-flash-preview";
-const LOVABLE_RESEARCHER = "google/gemini-3-flash-preview";
+// Rate limit: max requests per window per key (user or IP). Reduces abuse and protects OpenAI credits.
+const RATE_LIMIT_REQUESTS = 5;
+const RATE_LIMIT_WINDOW_MS = 60_000;
 
-// OpenAI fallback when both Z.AI and Lovable hit limits
-const OPENAI_ORCHESTRATOR = "gpt-4o-mini";
-const OPENAI_ANALYST = "gpt-4o-mini";
-const OPENAI_CODER = "gpt-4o-mini";
-const OPENAI_WRITER = "gpt-4o-mini";
-const OPENAI_RESEARCHER = "gpt-4o-mini";
+const requestTimestamps: Map<string, number[]> = new Map();
+
+function getRateLimitKey(req: Request): string {
+  const auth = req.headers.get("Authorization");
+  if (auth?.startsWith("Bearer ")) {
+    try {
+      const token = auth.slice(7);
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      if (payload.sub) return `u:${payload.sub}`;
+    } catch {
+      // ignore
+    }
+  }
+  const forwarded = req.headers.get("x-forwarded-for");
+  const ip = forwarded?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "anon";
+  return `ip:${ip}`;
+}
+
+function checkRateLimit(key: string): boolean {
+  const now = Date.now();
+  let list = requestTimestamps.get(key) ?? [];
+  list = list.filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
+  if (list.length >= RATE_LIMIT_REQUESTS) return false;
+  list.push(now);
+  requestTimestamps.set(key, list);
+  return true;
+}
 
 interface AgentEvent {
   id: string;
@@ -79,52 +97,28 @@ async function callProvider(
   }
 
   const data = await resp.json();
-  return data.choices?.[0]?.message?.content || "";
+  const msg = data.choices?.[0]?.message;
+  return msg?.content ?? msg?.reasoning_content ?? "";
 }
 
-/** Try Z.AI first; on 429/402 or error, fall back to Lovable, then OpenAI if set. */
+/** Z.AI first; on 429/402 or error, fall back to OpenAI only. Optional delay before fallback to avoid burst rate limits. */
 async function callAIWithFallback(
   zaiKey: string | undefined,
-  lovableKey: string | undefined,
   openaiKey: string | undefined,
   zaiModel: string,
-  lovableModel: string,
-  openaiModel: string,
   systemPrompt: string,
-  userPrompt: string
-): Promise<{ content: string; usedFallback: "zai" | "lovable" | "openai" }> {
+  userPrompt: string,
+  delayBeforeOpenAI = false
+): Promise<{ content: string; usedFallback: "zai" | "openai" }> {
   if (zaiKey) {
     try {
       const content = await callProvider(ZAI_GATEWAY, zaiKey, zaiModel, systemPrompt, userPrompt);
       return { content, usedFallback: "zai" };
     } catch (e) {
-      if (lovableKey) {
-        try {
-          const content = await callProvider(LOVABLE_GATEWAY, lovableKey, lovableModel, systemPrompt, userPrompt);
-          return { content, usedFallback: "lovable" };
-        } catch {
-          // fall through to OpenAI
-        }
-      }
+      if (delayBeforeOpenAI && openaiKey) await new Promise((r) => setTimeout(r, 1500));
       if (openaiKey) {
         try {
-          const content = await callProvider(OPENAI_GATEWAY, openaiKey, openaiModel, systemPrompt, userPrompt);
-          return { content, usedFallback: "openai" };
-        } catch {
-          throw e;
-        }
-      }
-      throw e;
-    }
-  }
-  if (lovableKey) {
-    try {
-      const content = await callProvider(LOVABLE_GATEWAY, lovableKey, lovableModel, systemPrompt, userPrompt);
-      return { content, usedFallback: "lovable" };
-    } catch (e) {
-      if (openaiKey) {
-        try {
-          const content = await callProvider(OPENAI_GATEWAY, openaiKey, openaiModel, systemPrompt, userPrompt);
+          const content = await callProvider(OPENAI_GATEWAY, openaiKey, OPENAI_MODEL, systemPrompt, userPrompt);
           return { content, usedFallback: "openai" };
         } catch {
           throw e;
@@ -134,10 +128,10 @@ async function callAIWithFallback(
     }
   }
   if (openaiKey) {
-    const content = await callProvider(OPENAI_GATEWAY, openaiKey, openaiModel, systemPrompt, userPrompt);
+    const content = await callProvider(OPENAI_GATEWAY, openaiKey, OPENAI_MODEL, systemPrompt, userPrompt);
     return { content, usedFallback: "openai" };
   }
-  throw new Error("Set at least one of ZAI_API_KEY, LOVABLE_API_KEY, or OPENAI_API_KEY in Supabase Edge Function secrets.");
+  throw new Error("Set at least one of ZAI_API_KEY or OPENAI_API_KEY in Edge Function secrets.");
 }
 
 serve(async (req) => {
@@ -146,14 +140,21 @@ serve(async (req) => {
   }
 
   const zaiKey = Deno.env.get("ZAI_API_KEY");
-  const lovableKey = Deno.env.get("LOVABLE_API_KEY");
   const openaiKey = Deno.env.get("OPENAI_API_KEY");
-  if (!zaiKey && !lovableKey && !openaiKey) {
+  if (!zaiKey && !openaiKey) {
     return new Response(
       JSON.stringify({
-        error: "Set at least one of ZAI_API_KEY, LOVABLE_API_KEY, or OPENAI_API_KEY in Supabase Edge Function secrets. Z.AI is primary; Lovable and OpenAI are fallbacks when rate-limited or out of credits.",
+        error: "Set at least one of ZAI_API_KEY or OPENAI_API_KEY in Edge Function secrets. Z.AI is primary; OpenAI is fallback when rate-limited or out of credits.",
       }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
+  const rateKey = getRateLimitKey(req);
+  if (!checkRateLimit(rateKey)) {
+    return new Response(
+      JSON.stringify({ error: "Too many research requests. Please wait a minute before trying again." }),
+      { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 
@@ -185,11 +186,8 @@ serve(async (req) => {
 
         const planRes = await callAIWithFallback(
           zaiKey,
-          lovableKey,
           openaiKey,
           ZAI_ORCHESTRATOR,
-          LOVABLE_ORCHESTRATOR,
-          OPENAI_ORCHESTRATOR,
           `You are ARIA's orchestration agent. Given a research task, decompose it into 5 subtasks.
 Output ONLY valid JSON with this structure:
 {
@@ -201,9 +199,10 @@ Output ONLY valid JSON with this structure:
   ],
   "reasoning": "Brief explanation of why this decomposition"
 }`,
-          query
+          query,
+          true
         );
-        if (planRes.usedFallback !== "zai") send(makeEvent("Orchestrator", "thinking", planRes.usedFallback === "lovable" ? "Z.AI limit — using Lovable/Gemini fallback." : "Using OpenAI fallback."));
+        if (planRes.usedFallback !== "zai") send(makeEvent("Orchestrator", "thinking", "Using OpenAI fallback."));
         const planRaw = planRes.content;
 
         send(makeEvent("Orchestrator", "plan", planRaw));
@@ -214,11 +213,8 @@ Output ONLY valid JSON with this structure:
 
         const researchRes = await callAIWithFallback(
           zaiKey,
-          lovableKey,
           openaiKey,
           ZAI_RESEARCHER,
-          LOVABLE_RESEARCHER,
-          OPENAI_RESEARCHER,
           `You are ARIA's Research Agent. Your job is to research the given topic thoroughly.
 Simulate having searched the web and academic sources. Provide a detailed research synthesis with:
 - 8-12 specific data points with years and numbers
@@ -231,7 +227,7 @@ Format as structured markdown with clear sections. Be specific with numbers, dat
 Write [1], [2], etc. for inline citations.`,
           query
         );
-        if (researchRes.usedFallback !== "zai") send(makeEvent("Researcher", "thinking", researchRes.usedFallback === "lovable" ? "Using Lovable/Gemini fallback." : "Using OpenAI fallback."));
+        if (researchRes.usedFallback !== "zai") send(makeEvent("Researcher", "thinking", "Using OpenAI fallback."));
         const researchResult = researchRes.content;
 
         send(makeEvent("Researcher", "action", "Searching academic databases, industry reports, and news sources..."));
@@ -243,11 +239,8 @@ Write [1], [2], etc. for inline citations.`,
 
         const analysisRes = await callAIWithFallback(
           zaiKey,
-          lovableKey,
           openaiKey,
           ZAI_ANALYST,
-          LOVABLE_ANALYST,
-          OPENAI_ANALYST,
           `You are ARIA's Analyst Agent — a rigorous analytical thinker.
 
 Given research findings, perform deep analysis:
@@ -266,7 +259,7 @@ For each finding provide:
 Be rigorous. Challenge assumptions. Distinguish correlation from causation.`,
           `Original question: ${query}\n\nResearch findings:\n${researchResult}`
         );
-        if (analysisRes.usedFallback !== "zai") send(makeEvent("Analyst", "thinking", analysisRes.usedFallback === "lovable" ? "Using Lovable/Gemini fallback." : "Using OpenAI fallback."));
+        if (analysisRes.usedFallback !== "zai") send(makeEvent("Analyst", "thinking", "Using OpenAI fallback."));
         const analysisResult = analysisRes.content;
 
         send(makeEvent("Analyst", "thinking", "Identifying patterns and contradictions across sources..."));
@@ -277,11 +270,8 @@ Be rigorous. Challenge assumptions. Distinguish correlation from causation.`,
 
         const coderRes = await callAIWithFallback(
           zaiKey,
-          lovableKey,
           openaiKey,
           ZAI_CODER,
-          LOVABLE_CODER,
-          OPENAI_CODER,
           `You are ARIA's Coder Agent — a data scientist who writes Python code.
 
 Given research data and analysis, write a Python script that:
@@ -300,7 +290,7 @@ Then output "EXECUTION OUTPUT:" followed by realistic simulated execution result
 Make the code realistic, well-commented, and use real numbers from the research.`,
           `Original question: ${query}\n\nResearch:\n${researchResult.slice(0, 2000)}\n\nAnalysis:\n${analysisResult.slice(0, 1500)}`
         );
-        if (coderRes.usedFallback !== "zai") send(makeEvent("Coder", "thinking", coderRes.usedFallback === "lovable" ? "Using Lovable/Gemini fallback." : "Using OpenAI fallback."));
+        if (coderRes.usedFallback !== "zai") send(makeEvent("Coder", "thinking", "Using OpenAI fallback."));
         const coderResult = coderRes.content;
 
         // Extract code block from response
@@ -322,11 +312,8 @@ Make the code realistic, well-commented, and use real numbers from the research.
 
         const reportRes = await callAIWithFallback(
           zaiKey,
-          lovableKey,
           openaiKey,
           ZAI_WRITER,
-          LOVABLE_WRITER,
-          OPENAI_WRITER,
           `You are ARIA's Writer Agent. Synthesize all inputs into a professional research report.
 
 Structure (use markdown):
@@ -371,7 +358,7 @@ Numbered list of 6-8 sources in format: [N] Author/Org — Title (Year)
 Make the report detailed (1500+ words), factual, and well-cited. Use specific numbers and dates.`,
           `Original question: ${query}\n\nResearch:\n${researchResult}\n\nAnalysis:\n${analysisResult}\n\nCode Analysis:\n${coderResult}`
         );
-        if (reportRes.usedFallback !== "zai") send(makeEvent("Writer", "thinking", reportRes.usedFallback === "lovable" ? "Using Lovable/Gemini fallback." : "Using OpenAI fallback."));
+        if (reportRes.usedFallback !== "zai") send(makeEvent("Writer", "thinking", "Using OpenAI fallback."));
         const report = reportRes.content;
 
         send(makeEvent("Writer", "action", "Generating structured report with citations..."));
@@ -380,11 +367,8 @@ Make the report detailed (1500+ words), factual, and well-cited. Use specific nu
         // === Extract sources from report for structured data ===
         const sourcesRes = await callAIWithFallback(
           zaiKey,
-          lovableKey,
           openaiKey,
           ZAI_ORCHESTRATOR,
-          LOVABLE_ORCHESTRATOR,
-          OPENAI_ORCHESTRATOR,
           `Extract all sources/references from this report. Return ONLY valid JSON array:
 [{"title": "Source title", "url": "https://plausible-url.com"}]
 Return 6-8 sources. Make URLs plausible (use real domains like arxiv.org, mckinsey.com, nature.com, etc.)`,
