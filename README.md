@@ -1,212 +1,117 @@
-<p align="center">
-  <img src="public/aria-logo-480.png" alt="ARIA Logo" width="120" />
-</p>
+# ARIA — Autonomous Research Intelligence Agent
 
-<h1 align="center">ARIA — Autonomous Research Intelligence Agent</h1>
+**Don't Google It. ARIA It.** — Production-grade autonomous research powered by **Z.AI GLM** with OpenAI fallback.
 
-<p align="center">
-  <strong>Don't Google It. ARIA It.</strong><br/>
-  Production-grade autonomous research powered by <strong>Z.AI GLM series models</strong>.
-</p>
+ARIA turns a research question into a structured report via a multi-agent pipeline: orchestration → research synthesis → analysis → code/data viz → report writing.
 
-<p align="center">
-  <a href="https://ariaoracle.lovable.app"><img src="https://img.shields.io/badge/Live_Demo-ariaoracle.lovable.app-22D3EE?style=for-the-badge" alt="Live Demo" /></a>
-  <a href="https://ariaoracle.lovable.app/docs"><img src="https://img.shields.io/badge/Docs-Documentation-3B82F6?style=for-the-badge" alt="Docs" /></a>
-</p>
+**Backend:** Supabase (auth, DB, Edge Functions) is managed by **Lovable Cloud** — Lovable *is* our Supabase. There is no separate Supabase dashboard login; Lovable manages the project and Edge Function secrets. The frontend (Vercel or local) **calls** this backend using the Supabase URL and anon key. The GitHub repo is **disconnected** from Lovable, so any edits in the repo must be communicated to Lovable (e.g. via `docs/LOVABLE_SYNC_PROMPT.md`) so the backend stays in sync.
 
 ---
 
-## Overview
-
-ARIA transforms a single research question into a structured, cited report by orchestrating a **5-agent pipeline** — each agent powered by Z.AI's GLM models with automatic Gemini fallback for resilience.
-
-```
-User Question
-     │
-     ▼
-┌─────────────────────────────────────────────────────┐
-│  Orchestrator (GLM-4-Plus)                          │
-│  Decomposes query → research plan with subtasks     │
-└──────────────┬──────────────────────────────────────┘
-               │
-     ┌─────────┴─────────┐
-     ▼                   ▼
-┌──────────┐      ┌──────────┐
-│Researcher│      │ Analyst  │
-│GLM-4-Plus│      │ GLM-4.7  │
-│Web synth.│      │Reasoning │
-│8-12 pts  │      │Confidence│
-│5-8 srcs  │      │scores    │
-└────┬─────┘      └────┬─────┘
-     │                 │
-     └────────┬────────┘
-              ▼
-       ┌──────────┐
-       │  Coder   │
-       │ GLM-4.7  │
-       │ Python   │
-       │ analysis │
-       └────┬─────┘
-            ▼
-       ┌──────────┐
-       │  Writer  │
-       │GLM-4-Plus│
-       │ Final    │
-       │ report   │
-       └────┬─────┘
-            ▼
-    Shareable Report
-    (Markdown + Sources)
-```
-
-## Z.AI Integration
-
-ARIA uses Z.AI's GLM series as the **core** LLM component. Lovable/Gemini serves as an automatic fallback when Z.AI returns 429 (rate limit) or 402 (credits exhausted), ensuring the app stays live during demos.
-
-| Agent | Primary Model | Concurrency | Fallback | Responsibility |
-|-------|--------------|-------------|----------|----------------|
-| **Orchestrator** | GLM-4-Plus | 20 | Gemini | Task decomposition, planning, source extraction |
-| **Researcher** | GLM-4-Plus | 20 | Gemini | Multi-source synthesis, citations, data points |
-| **Analyst** | GLM-4.7 | 3 | Gemini | Deep reasoning, confidence scores, contradictions |
-| **Coder** | GLM-4.7 | 3 | Gemini | Python (pandas/matplotlib), data analysis & charts |
-| **Writer** | GLM-4-Plus | 20 | Gemini | Final report: executive summary, findings, sources |
-
-**Why two model tiers?**
-- **GLM-4-Plus** (concurrency 20) — Fast, high-throughput. Used for orchestration, research, and writing where speed matters.
-- **GLM-4.7** (concurrency 3) — Advanced reasoning. Used for deep analysis and code generation where accuracy matters.
-
-**References:** [Z.AI API Docs](https://docs.z.ai/api-reference/llm/chat-completion) · [GLM-4.6 Guide](https://docs.z.ai/guides/llm/glm-4.6) · [GLM-4.7 Blog](https://z.ai/blog/glm-4.7)
-
-## Live Demo
-
-**[→ Try ARIA Live](https://ariaoracle.lovable.app)** — Sign up, ask a research question, and watch the agents work in real-time.
-
-**[→ Documentation](https://ariaoracle.lovable.app/docs)** — Full feature docs and architecture overview.
-
-## Features
-
-- **🤖 5-Agent Pipeline** — Orchestrator → Researcher → Analyst → Coder → Writer
-- **⚡ Real-time SSE Streaming** — Watch agents think, plan, and act live via Server-Sent Events
-- **🧠 Intelligent Intent Classification** — Auto-routes between quick chat (Gemini) and deep research (Z.AI)
-- **📊 Shareable Reports** — Export as markdown, share via unique links
-- **📎 File Attachments** — Upload documents for context-aware research
-- **💾 Persistent Sessions** — Full conversation history with authentication
-- **🌓 Dark/Light Themes** — Polished dual-theme UI
-- **📱 Responsive** — Desktop and mobile ready
-- **🔄 Automatic Fallback** — Z.AI → Gemini failover keeps the app running
-
-## Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| **Frontend** | React 18, TypeScript, Vite, Tailwind CSS, shadcn/ui, Framer Motion |
-| **Backend** | Supabase (Auth, PostgreSQL, Edge Functions, Storage) |
-| **AI (Primary)** | Z.AI GLM-4-Plus & GLM-4.7 |
-| **AI (Fallback)** | Google Gemini via Lovable AI Gateway |
-| **Hosting** | Lovable Cloud |
-
-## Setup & Installation
-
-### Prerequisites
-
-- Node.js 18+
-- npm or bun
-- A Supabase project (or use Lovable Cloud)
-- Z.AI API key ([get one here](https://chat.z.ai/))
-
-### Quick Start
+## Quick start (clone and run locally)
 
 ```bash
-# 1. Clone the repository
 git clone https://github.com/henrysammarfo/aria-the-research-oracle.git
 cd aria-the-research-oracle
-
-# 2. Install dependencies
-npm install
-
-# 3. Configure environment
 cp .env.example .env
-# Edit .env with your Supabase project credentials:
-#   VITE_SUPABASE_URL=https://your-project.supabase.co
-#   VITE_SUPABASE_PUBLISHABLE_KEY=your-anon-key
-
-# 4. Start development server
+npm install
 npm run dev
 ```
 
-### Edge Function Secrets
+Open the URL shown (e.g. http://localhost:5173). Go to Dashboard and run a research query. For local test, fill `.env` with your Supabase URL and anon key (from Lovable Cloud for this project, or your own). Z.AI and OpenAI keys live in **Lovable** (Edge Function secrets), not in `.env` — the frontend only needs the Supabase keys to call the backend.
 
-The research pipeline runs in Supabase Edge Functions. Configure these secrets in your Supabase project (Settings → Edge Functions → Secrets):
+**Local verification before PR / Vercel**
 
-| Secret | Required | Description |
-|--------|----------|-------------|
-| `ZAI_API_KEY` | At least one | Z.AI API key (primary AI provider) |
-| `LOVABLE_API_KEY` | At least one | Lovable AI Gateway key (fallback) |
+1. `.env` has `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID` (from Lovable for this project).
+2. In Lovable, set Edge Function secrets: `ZAI_API_KEY`, `OPENAI_API_KEY`.
+3. `npm run build` — must succeed (Vercel runs this).
+4. `npm run test:e2e-pipeline` — calls the backend; takes ~2–3 min. Optional: `npm run verify` runs build then e2e.
 
-> **Tip:** Set both keys for the best experience. If Z.AI hits rate limits, ARIA seamlessly falls back to Gemini.
+---
 
-### Database Setup
+## For judges / reviewers
 
-ARIA requires these tables (auto-created via migrations):
+**Option A — Live demo**  
+Use the **Vercel deployment URL** from our submission. Sign in and run a query to test the full pipeline.
 
-- `profiles` — User profiles with theme preferences
-- `research_sessions` — Persisted research sessions with reports
-- `chat_messages` — Conversation history
+**Option B — Clone and test locally**  
+Follow [Quick start](#quick-start-clone-and-run-locally) above. Copy `.env.example` to `.env` and add the Supabase URL and anon key (from Lovable for this project, or your own backend).
 
-All tables have Row-Level Security (RLS) enabled.
-
-## Project Structure
-
-```
-├── src/
-│   ├── components/
-│   │   ├── dashboard/       # Chat UI, agent stream, session history
-│   │   ├── docs/            # Documentation hub
-│   │   └── ui/              # shadcn/ui components
-│   ├── hooks/               # useChat, useAuth, useSessionHistory
-│   ├── lib/                 # AI pipeline, utilities
-│   ├── pages/               # Dashboard, Auth, Docs, Settings
-│   └── types/               # TypeScript types (AgentEvent, etc.)
-├── supabase/
-│   └── functions/
-│       ├── aria-research/   # Deep research pipeline (5-agent)
-│       ├── aria-chat/       # Quick chat with intent classification
-│       └── delete-account/  # Account deletion
-└── public/                  # Static assets
-```
-
-## For Judges / Reviewers
-
-### Option 1 — Live Demo (Recommended)
-
-Visit **[ariaoracle.lovable.app](https://ariaoracle.lovable.app)**, sign up, and run a research query. The full 5-agent pipeline streams in real-time.
-
-### Option 2 — Clone & Run
-
-1. Clone, install, and configure `.env` (see [Quick Start](#quick-start))
-2. Create your own Supabase project and deploy edge functions
-3. Set `ZAI_API_KEY` and/or `LOVABLE_API_KEY` in edge function secrets
-4. Run `npm run dev` and test from the Dashboard
-
-### E2E Pipeline Test
+**Optional — E2E pipeline test**
 
 ```bash
 npm run test:e2e-pipeline
 ```
 
-Verifies the full pipeline returns a report (~2–3 minutes).
-
-> **No API keys or credentials are shared by the authors.** Use the live demo or your own keys.
-
-## Deploy
-
-- **Lovable:** Open project → Share → Publish
-- **GitHub → Lovable:** Push to GitHub, changes auto-sync to Lovable
-- **Custom Domain:** Project → Settings → Domains
+Runs one full pipeline and checks that a report is returned (~2–3 min). Uses `.env` for the Supabase endpoint.
 
 ---
 
-<p align="center">
-  <strong>ARIA — Autonomous Research Intelligence Agent</strong><br/>
-  Powered by Z.AI GLM · Built with Lovable
-</p>
+## Deploy on Vercel
+
+1. **Import** the repo in [Vercel](https://vercel.com) (e.g. from GitHub).
+2. **Environment variables** (Vercel → Project → Settings → Environment Variables): add the same three vars from `.env.example` (use your real values — from Lovable Cloud for this project or your own Supabase):
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_PUBLISHABLE_KEY`
+   - `VITE_SUPABASE_PROJECT_ID`
+3. **Deploy** — Vercel uses `vercel.json` (build: `npm run build`, output: `dist`, SPA rewrites). Frontend is on Vercel; the research pipeline runs on the Lovable-managed Edge Function.
+
+Z.AI and OpenAI keys live only in **Lovable Cloud** (Edge Function secrets). They are not in the repo and not in Vercel env.
+
+---
+
+## Backend (Lovable Cloud)
+
+The pipeline runs in **Supabase Edge Functions** managed by **Lovable Cloud**. Z.AI and OpenAI keys are set as **secrets in Lovable** (Edge Function secrets), not in `.env` or the repo. If you deploy your own copy of the Edge Function (e.g. your own Supabase project), you would set there:
+
+- **ZAI_API_KEY** — [Z.AI Open Platform](https://chat.z.ai/) (full API key)
+- **OPENAI_API_KEY** — [OpenAI API keys](https://platform.openai.com/api-keys) (fallback when Z.AI is rate-limited)
+
+---
+
+## What ARIA does
+
+1. You enter a research question.
+2. **Orchestrator** (Z.AI GLM-4-Plus) decomposes it into subtasks.
+3. **Researcher** (GLM-4-Plus) produces a synthesis with data points and sources.
+4. **Analyst** (GLM-4.7) returns findings with confidence scores.
+5. **Coder** (GLM-4.7) generates Python for data and charts.
+6. **Writer** (GLM-4-Plus) produces the final report (markdown, summary, citations).
+7. You get a shareable report and session history.
+
+---
+
+## Project structure
+
+```
+aria-the-research-oracle/
+├── src/                    # Frontend (Vite + React)
+│   ├── components/         # UI components
+│   ├── pages/              # Routes (Index, Dashboard, Settings, etc.)
+│   ├── lib/                # API client, pipeline caller
+│   ├── hooks/              # Auth, session history
+│   └── integrations/      # Supabase client
+├── supabase/
+│   └── functions/
+│       └── aria-research/  # Edge Function: Z.AI + OpenAI pipeline
+├── scripts/
+│   └── e2e-pipeline-test.mjs   # E2E test for pipeline
+├── .env.example            # Copy to .env; Supabase URL + anon key (from Lovable or your own)
+├── docs/
+│   └── LOVABLE_SYNC_PROMPT.md   # Tell Lovable when repo changes (repo is disconnected)
+├── vercel.json             # Vercel build and SPA config
+└── package.json
+```
+
+---
+
+## Tech stack
+
+- **Frontend:** Vite, TypeScript, React, shadcn-ui, Tailwind CSS  
+- **Backend:** Supabase (Auth, DB, Edge Functions) — Lovable Cloud  
+- **AI:** Z.AI GLM (primary), OpenAI (fallback), via Edge Function  
+- **Deploy:** Vercel (frontend), Lovable Cloud (backend)
+
+---
+
+*ARIA — Autonomous Research Intelligence Agent · Powered by Z.AI GLM*
