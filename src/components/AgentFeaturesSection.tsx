@@ -5,7 +5,7 @@ const agents = [
   {
     name: "Researcher",
     icon: Search,
-    model: "GLM-4-Plus",
+    model: "GLM-4.6",
     tagline: "Finds what others miss",
     description:
       "Deploys web search and source synthesis across multiple references. Fetches, parses, and cross-references to build a citation-ready research base before the Analyst starts.",
@@ -38,7 +38,7 @@ const agents = [
   {
     name: "Writer",
     icon: FileText,
-    model: "GLM-4-Plus",
+    model: "GLM-4.6",
     tagline: "Your findings, publication-ready",
     description:
       "Takes raw agent outputs and crafts a structured report: executive summary, numbered findings, inline citations, data tables, and charts. Export to Markdown and share via link.",
@@ -51,7 +51,6 @@ const agents = [
 const AgentFeaturesSection = () => {
   return (
     <section
-      id="agents"
       className="relative w-full overflow-hidden"
       style={{ background: "#000", padding: "140px 0 120px" }}
     >
