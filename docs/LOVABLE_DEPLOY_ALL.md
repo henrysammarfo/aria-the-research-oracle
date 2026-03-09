@@ -1,5 +1,7 @@
 # Deploy all three Edge Functions to Lovable
 
+**Workflow:** Lovable is disconnected from GitHub. Backend changes in Lovable deploy immediately (Vercel already uses that backend). Lovable cannot push to this repo — sync code manually. See **`docs/LOVABLE_GITHUB_VERCEL_WORKFLOW.md`** for the full picture.
+
 Deployed function URLs (your project):
 
 - **aria-research:** https://cgzryavrxphlrfivykdb.supabase.co/functions/v1/aria-research  

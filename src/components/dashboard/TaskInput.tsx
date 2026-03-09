@@ -24,14 +24,17 @@ interface TaskInputProps {
 const TaskInput = forwardRef<HTMLDivElement, TaskInputProps>(({ onSubmit, isLoading, isDark = true, showExamples = true }, ref) => {
   const [value, setValue] = useState("");
   const [files, setFiles] = useState<UploadedFile[]>([]);
+  const [isCoolingDown, setIsCoolingDown] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = () => {
-    if ((!value.trim() && files.length === 0) || isLoading) return;
+    if ((!value.trim() && files.length === 0) || isLoading || isCoolingDown) return;
     onSubmit(value.trim(), files.length > 0 ? files : undefined);
     setValue("");
     setFiles([]);
+    setIsCoolingDown(true);
+    setTimeout(() => setIsCoolingDown(false), 5000);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -144,7 +147,7 @@ const TaskInput = forwardRef<HTMLDivElement, TaskInputProps>(({ onSubmit, isLoad
           </div>
           <button
             onClick={handleSubmit}
-            disabled={(!value.trim() && files.length === 0) || isLoading}
+            disabled={(!value.trim() && files.length === 0) || isLoading || isCoolingDown}
             className="flex items-center gap-2 rounded-lg font-medium transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed hover:opacity-90"
             style={{ background: c.btnBg, color: c.btnText, padding: "8px 16px", fontSize: 13 }}
           >

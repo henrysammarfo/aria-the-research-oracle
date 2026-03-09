@@ -1,3 +1,4 @@
+import { supabase } from "@/integrations/supabase/client";
 import type { AgentEvent, TaskState } from "@/types/aria";
 
 const FUNCTION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/aria-research`;
@@ -6,16 +7,33 @@ export async function runAIPipeline(
   query: string,
   onEvent: (e: AgentEvent) => void
 ): Promise<TaskState["report"]> {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session?.access_token) {
+    throw new Error("AUTH_REQUIRED");
+  }
+
   const resp = await fetch(FUNCTION_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+      Authorization: `Bearer ${session.access_token}`,
     },
     body: JSON.stringify({ query }),
   });
 
   if (!resp.ok) {
+    if (resp.status === 401) {
+      throw new Error("AUTH_REQUIRED");
+    }
+    if (resp.status === 429) {
+      const data = await resp.json().catch(() => ({}));
+      const message =
+        (data as any)?.error || "You have hit the research rate limit. Please wait and try again.";
+      throw new Error(message);
+    }
     const text = await resp.text();
     throw new Error(`Request failed (${resp.status}): ${text}`);
   }

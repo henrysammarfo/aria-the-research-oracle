@@ -178,6 +178,13 @@ export function useChat() {
           });
         }
 
+        const { data: sessionData } = await supabase.auth.getSession();
+        const accessToken = sessionData.session?.access_token;
+        if (!accessToken) {
+          toast.error("Please sign in to use ARIA Chat.");
+          return;
+        }
+
         const controller = new AbortController();
         abortRef.current = controller;
 
@@ -185,7 +192,7 @@ export function useChat() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            Authorization: `Bearer ${accessToken}`,
           },
           body: JSON.stringify({ messages: allMsgs }),
           signal: controller.signal,
@@ -195,9 +202,11 @@ export function useChat() {
         const contentType = resp.headers.get("content-type") || "";
 
         if (!resp.ok) {
-          const errData = await resp.json().catch(() => ({}));
-          if (resp.status === 429) {
-            toast.error("Rate limit reached. Please wait a moment.");
+          const errData = (await resp.json().catch(() => ({}))) as { error?: string };
+          if (resp.status === 401) {
+            toast.error("Please sign in to use ARIA Chat.");
+          } else if (resp.status === 429) {
+            toast.error(errData.error || "Rate limit reached. Please wait a moment.");
           } else if (resp.status === 402) {
             toast.error("AI credits exhausted. Please add credits.");
           } else {
@@ -345,9 +354,19 @@ export function useChat() {
       let report: any;
       try {
         report = await runAIPipeline(query, onEvent);
-      } catch (err) {
-        console.error("AI pipeline failed, falling back:", err);
-        toast.error("AI backend unavailable — running demo mode");
+      } catch (err: any) {
+        console.error("AI pipeline failed:", err);
+        if (err instanceof Error && err.message === "AUTH_REQUIRED") {
+          toast.error("Please sign in to use ARIA Research.");
+          setIsResearching(false);
+          setResearchEvents([]);
+          return;
+        }
+        if (err instanceof Error && err.message) {
+          toast.error(err.message);
+        } else {
+          toast.error("AI backend unavailable — running demo mode");
+        }
         setResearchEvents([]);
         try {
           report = await runSimulatedPipeline(query, onEvent);
